@@ -149,7 +149,8 @@ func GetPost(c *gin.Context) {
 	db := config.DB
 	postID := c.Param("id")
 
-	result := db.Preload("Author").Preload("CategoryID").Preload("Tags").Preload("Comments").Where("id = ?", postID).First(&post)
+	// 预加载关联的 Author、Category、Tags 和 Comments
+	result := db.Preload("Author").Preload("Category").Preload("Tags").Preload("Comments").Where("id = ?", postID).First(&post)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "文章未找到"})
