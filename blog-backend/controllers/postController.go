@@ -14,6 +14,16 @@ import (
 
 // 创建文章并关联标签
 func CreatePost(c *gin.Context) {
+	// 从上下文中获取当前登录用户的 ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户未登录"})
+		return
+	}
+
+	// 将 userID 从 float64 转换为 uint
+	userIDUint := uint(userID.(float64))
+
 	// 定义输入结构体
 	var input struct {
 		Title      string   `json:"title" binding:"required"`
@@ -62,11 +72,12 @@ func CreatePost(c *gin.Context) {
 			tags = append(tags, tag)
 		}
 
-		// 创建文章并关联标签
+		// 创建文章并关联标签和作者
 		post := models.Post{
 			Title:      input.Title,
 			Content:    input.Content,
 			CategoryID: input.CategoryID,
+			AuthorID:   userIDUint, // 使用转换后的作者ID
 			Tags:       tags,
 			Views:      0,
 			CreatedAt:  time.Now(),

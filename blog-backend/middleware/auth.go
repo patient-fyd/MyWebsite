@@ -54,6 +54,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// 从令牌中获取用户ID
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if ok && token.Valid {
+			userID := claims["user_id"]
+			c.Set("userID", userID) // 将 userID 存入上下文
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的令牌"})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }
