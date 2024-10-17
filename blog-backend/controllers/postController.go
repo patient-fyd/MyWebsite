@@ -109,7 +109,7 @@ func GetPosts(c *gin.Context) {
 	tagID := c.Query("tag_id")
 	searchQuery := c.Query("search")
 
-	query := db.Preload("Author").Preload("CategoryID").Preload("Tags").Offset(offset).Limit(pageSize)
+	query := db.Preload("Author").Preload("Category").Preload("Tags").Offset(offset).Limit(pageSize)
 
 	// 应用过滤条件
 	if categoryID != "" {
