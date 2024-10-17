@@ -5,21 +5,93 @@ import (
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/models"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
+// 创建文章并关联标签
 func CreatePost(c *gin.Context) {
-	var post models.Post
-	if err := c.ShouldBindJSON(&post); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 定义输入结构体
+	var input struct {
+		Title      string   `json:"title" binding:"required"`
+		Content    string   `json:"content" binding:"required"`
+		CategoryID uint     `json:"category_id" binding:"required"`
+		Tags       []string `json:"tags" binding:"required,min=1"` // 至少一个标签
+	}
+
+	// 绑定 JSON 输入并验证
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Printf("Invalid input: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的输入: " + err.Error()})
 		return
 	}
-	if err := config.DB.Create(&post).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	// 过滤空标签并去除多余空格
+	var validTags []string
+	for _, tagName := range input.Tags {
+		tagName = strings.TrimSpace(tagName)
+		if tagName != "" {
+			validTags = append(validTags, tagName)
+		}
+	}
+
+	// 打印过滤后的标签
+	log.Printf("Valid Tags: %v\n", validTags)
+
+	// 检查是否有有效标签
+	if len(validTags) == 0 {
+		log.Println("No valid tags provided.")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
 		return
 	}
-	c.JSON(http.StatusOK, post)
+
+	// 开启事务
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		// 查找或创建标签
+		var tags []models.Tag
+		for _, tagName := range validTags {
+			var tag models.Tag
+			if err := tx.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName}).Error; err != nil {
+				log.Printf("Error creating tag '%s': %v\n", tagName, err)
+				return err
+			}
+			log.Printf("Tag found or created: %v\n", tag)
+			tags = append(tags, tag)
+		}
+
+		// 创建文章并关联标签
+		post := models.Post{
+			Title:      input.Title,
+			Content:    input.Content,
+			CategoryID: input.CategoryID,
+			Tags:       tags,
+			Views:      0,
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		}
+
+		log.Printf("Creating post: %+v\n", post)
+
+		if err := tx.Create(&post).Error; err != nil {
+			log.Printf("Error creating post: %v\n", err)
+			return err
+		}
+
+		log.Printf("Post created successfully: %+v\n", post)
+
+		// 返回成功的响应
+		c.JSON(http.StatusOK, post)
+		return nil
+	})
+
+	if err != nil {
+		log.Printf("Transaction failed: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建文章失败: " + err.Error()})
+		return
+	}
 }
 
 // GetPosts 获取文章列表，支持分页、分类、标签和搜索功能
@@ -37,7 +109,7 @@ func GetPosts(c *gin.Context) {
 	tagID := c.Query("tag_id")
 	searchQuery := c.Query("search")
 
-	query := db.Preload("Author").Preload("Category").Preload("Tags").Offset(offset).Limit(pageSize)
+	query := db.Preload("Author").Preload("CategoryID").Preload("Tags").Offset(offset).Limit(pageSize)
 
 	// 应用过滤条件
 	if categoryID != "" {
@@ -66,7 +138,7 @@ func GetPost(c *gin.Context) {
 	db := config.DB
 	postID := c.Param("id")
 
-	result := db.Preload("Author").Preload("Category").Preload("Tags").Preload("Comments").Where("id = ?", postID).First(&post)
+	result := db.Preload("Author").Preload("CategoryID").Preload("Tags").Preload("Comments").Where("id = ?", postID).First(&post)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "文章未找到"})

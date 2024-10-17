@@ -3,12 +3,12 @@ package models
 import "time"
 
 type Post struct {
-	ID        uint   `gorm:"primaryKey"`
-	Title     string `gorm:"type:varchar(100)"`
-	Content   string `gorm:"type:text"`
-	Category  string `gorm:"type:varchar(50)"`
-	Tags      string `gorm:"type:varchar(100)"`
-	Views     int    `gorm:"type:int"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         uint   `gorm:"primaryKey"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	CategoryID uint   `json:"category_id"`
+	Tags       []Tag  `gorm:"many2many:post_tags;" json:"tags"` // 使用关联表
+	Views      uint   `json:"views"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
