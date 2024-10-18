@@ -18,6 +18,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// 确保 Authorization 头部的格式是 "Bearer token"
+		if len(tokenString) <= len("Bearer ") {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证格式"})
+			c.Abort()
+			return
+		}
+
 		// 移除 "Bearer " 前缀
 		tokenString = tokenString[len("Bearer "):]
 
@@ -25,60 +32,59 @@ func AuthMiddleware() gin.HandlerFunc {
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return config.JwtSecret, nil
 		})
+
 		// 检查解析 JWT 时是否发生错误
-		if err != nil {
+		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证令牌"})
 			c.Abort()
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			// 检查是否需要刷新令牌（例如剩余时间小于1小时）
-			exp := int64(claims["exp"].(float64))
-			if time.Unix(exp, 0).Sub(time.Now()) < time.Hour {
-				// 刷新令牌
-				newToken, err := GenerateToken(uint(claims["user_id"].(float64)), claims["username"].(string), claims["role"].(string))
-				if err == nil {
-					c.Header("Authorization", newToken) // 将新令牌返回给客户端
-				}
-			}
-
-			// 将用户信息存入上下文
-			c.Set("user_id", uint(claims["user_id"].(float64)))
-			c.Set("username", claims["username"].(string))
-			c.Set("role", claims["role"].(string))
-
-		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证令牌"})
-			c.Abort()
-			return
-		}
-
-		// 从令牌中获取用户ID
+		// 获取 JWT 中的声明信息
 		claims, ok := token.Claims.(jwt.MapClaims)
-		if ok && token.Valid {
-			userID := claims["user_id"]
-			c.Set("userID", userID) // 将 userID 存入上下文
-		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的令牌"})
+		if !ok || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证令牌"})
 			c.Abort()
 			return
 		}
 
+		// 将用户信息存入上下文
+		c.Set("user_id", uint(claims["user_id"].(float64)))
+		c.Set("username", claims["username"].(string))
+		c.Set("role", claims["role"].(string))
+
+		// 继续处理下一个中间件/路由
 		c.Next()
 	}
 }
 
-// GenerateToken 生成 JWT 令牌
-func GenerateToken(userID uint, username, role string) (string, error) {
-	// 创建 token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+// GenerateToken 生成访问令牌和刷新令牌
+func GenerateToken(userID uint, username, role string) (string, string, error) {
+	// 创建访问令牌，有效期为 24 小时
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  userID,
 		"username": username,
-		"role":     role,                                  // 添加角色信息
-		"exp":      time.Now().Add(time.Hour * 24).Unix(), // 设置24小时后过期
+		"role":     role,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // 24小时后过期
 	})
 
-	// 签名并生成完整的编码后的 token 字符串
-	return token.SignedString(config.JwtSecret)
+	accessTokenString, err := accessToken.SignedString(config.JwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	// 创建刷新令牌，有效期为 7 天，并包含用户信息
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  userID,
+		"username": username,
+		"role":     role,
+		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(), // 7天后过期
+	})
+
+	refreshTokenString, err := refreshToken.SignedString(config.JwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessTokenString, refreshTokenString, nil
 }

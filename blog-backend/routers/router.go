@@ -12,6 +12,7 @@ func SetupRoutes(r *gin.Engine) {
 		// 用户注册和登录
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
+		api.POST("/refresh-token", controllers.RefreshToken) // 刷新令牌接口
 
 		// 用户信息管理
 		api.GET("/user", middleware.AuthMiddleware(), controllers.GetUser)    // 获取用户信息

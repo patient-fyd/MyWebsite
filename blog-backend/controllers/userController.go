@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/middleware"
@@ -66,17 +67,18 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// 生成 JWT
-	token, err := middleware.GenerateToken(user.ID, user.Username, user.Role)
+	// 生成访问令牌和刷新令牌
+	accessToken, refreshToken, err := middleware.GenerateToken(user.ID, user.Username, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "生成令牌失败"})
 		return
 	}
 
-	// 返回 JWT 令牌
+	// 返回访问令牌和刷新令牌
 	c.JSON(http.StatusOK, gin.H{
-		"message": "登录成功",
-		"token":   token,
+		"message":       "登录成功",
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
 	})
 }
 
@@ -142,4 +144,52 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "用户信息更新成功"})
+}
+
+// RefreshToken 刷新访问令牌
+func RefreshToken(c *gin.Context) {
+	var input struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求"})
+		return
+	}
+
+	// 解析刷新令牌
+	token, err := jwt.Parse(input.RefreshToken, func(token *jwt.Token) (interface{}, error) {
+		return config.JwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的刷新令牌"})
+		return
+	}
+
+	// 从令牌中提取用户信息
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userIDFloat, userIDExists := claims["user_id"].(float64)
+		username, usernameExists := claims["username"].(string)
+		role, roleExists := claims["role"].(string)
+
+		if !userIDExists || !usernameExists || !roleExists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "令牌中缺少必要信息"})
+			return
+		}
+
+		// 生成新的访问令牌
+		accessToken, _, err := middleware.GenerateToken(uint(userIDFloat), username, role)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "生成新访问令牌失败"})
+			return
+		}
+
+		// 返回新的访问令牌
+		c.JSON(http.StatusOK, gin.H{
+			"access_token": accessToken,
+		})
+	} else {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的刷新令牌"})
+	}
 }
