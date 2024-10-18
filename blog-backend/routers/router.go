@@ -14,6 +14,11 @@ func SetupRoutes(r *gin.Engine) {
 		api.POST("/login", controllers.Login)
 		api.POST("/refresh-token", controllers.RefreshToken) // 刷新令牌接口
 
+		// 密码相关功能
+		api.POST("/change-password", middleware.AuthMiddleware(), controllers.ChangePassword)
+		api.POST("/request-password-reset", controllers.RequestPasswordReset)
+		api.POST("/reset-password", controllers.ResetPassword)
+
 		// 用户信息管理
 		api.GET("/user", middleware.AuthMiddleware(), controllers.GetUser)    // 获取用户信息
 		api.PUT("/user", middleware.AuthMiddleware(), controllers.UpdateUser) // 更新用户信息

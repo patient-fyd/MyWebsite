@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+	"github.com/patient-fyd/blog-backend/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -17,4 +19,23 @@ func Setup() {
 		log.Fatalf("数据库连接失败: %v", err)
 	}
 
+	// 执行自动迁移
+	err = MigrateDB()
+	if err != nil {
+		fmt.Println("数据库迁移失败:", err)
+	} else {
+		fmt.Println("数据库迁移成功")
+	}
+}
+
+// MigrateDB 自动迁移数据库表结构
+func MigrateDB() error {
+	return DB.AutoMigrate(
+		&models.User{},    // 自动迁移 User 模型
+		&models.Post{},    // 自动迁移 Post 模型
+		&models.Comment{}, // 自动迁移 Comment 模型
+		&models.SiteStatistic{},
+		&models.Category{},
+		&models.Tag{},
+	)
 }
