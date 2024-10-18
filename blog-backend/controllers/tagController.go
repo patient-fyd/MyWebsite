@@ -33,6 +33,13 @@ func CreateTag(c *gin.Context) {
 		return
 	}
 
+	// 检查标签是否已存在
+	var existingTag models.Tag
+	if err := db.Where("name = ?", tag.Name).First(&existingTag).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "标签已存在"})
+		return
+	}
+
 	// 保存标签
 	if err := db.Create(&tag).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建标签失败：" + err.Error()})
