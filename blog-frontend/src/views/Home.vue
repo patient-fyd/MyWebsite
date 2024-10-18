@@ -41,12 +41,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useStore } from '@/store'; // 使用 Pinia store
 
 // 引入组件
-import SearchBar from '@/components/SearchBar.vue';
-import CategoryFilter from '@/components/CategoryFilter.vue';
-import TagFilter from '@/components/TagFilter.vue';
-import ArticleList from '@/components/ArticleList.vue';
-import Pagination from '@/components/Pagination.vue';
-import PopularPosts from '@/components/PopularPosts.vue';
+import SearchBar from '@/components/home/SearchBar.vue';
+import CategoryFilter from '@/components/home/CategoryFilter.vue';
+import TagFilter from '@/components/home/TagFilter.vue';
+import ArticleList from '@/components/home/ArticleList.vue';
+import Pagination from '@/components/home/Pagination.vue';
+import PopularPosts from '@/components/home/PopularPosts.vue';
 
 // Store 引用
 const store = useStore();
