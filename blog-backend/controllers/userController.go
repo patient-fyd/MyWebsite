@@ -82,42 +82,58 @@ func Login(c *gin.Context) {
 
 // GetUser 获取用户信息
 func GetUser(c *gin.Context) {
+	// 从上下文中获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户未登录"})
+		return
+	}
+
 	var user models.User
 	db := config.DB
-	userID, _ := c.Get("user_id")
 
-	// 查找用户
+	// 根据用户ID查找用户
 	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "用户未找到"})
 		return
 	}
 
-	// 返回用户信息
-	c.JSON(http.StatusOK, gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"email":    user.Email,
-		"role":     user.Role, // 返回用户身份
-	})
+	c.JSON(http.StatusOK, user)
 }
 
 // UpdateUser 更新用户信息
 func UpdateUser(c *gin.Context) {
+	// 从上下文中获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户未登录"})
+		return
+	}
+
 	var user models.User
 	db := config.DB
-	userID, _ := c.Get("user_id")
 
-	// 查找用户
+	// 根据用户ID查找用户
 	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "用户未找到"})
 		return
 	}
 
-	// 绑定传入的 JSON 数据
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的数据格式"})
+	// 定义一个输入结构体来接收更新数据
+	var input struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}
+
+	// 绑定更新数据
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的数据格式：" + err.Error()})
 		return
 	}
+
+	// 更新用户信息
+	user.Username = input.Username
+	user.Email = input.Email
 
 	// 保存更新后的用户信息
 	if err := db.Save(&user).Error; err != nil {

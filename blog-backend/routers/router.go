@@ -13,6 +13,10 @@ func SetupRoutes(r *gin.Engine) {
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
 
+		// 用户信息管理
+		api.GET("/user", middleware.AuthMiddleware(), controllers.GetUser)    // 获取用户信息
+		api.PUT("/user", middleware.AuthMiddleware(), controllers.UpdateUser) // 更新用户信息
+
 		// 文章管理（需要用户认证的操作）
 		api.POST("/posts", middleware.AuthMiddleware(), controllers.CreatePost)
 		api.GET("/posts", controllers.GetPosts)
