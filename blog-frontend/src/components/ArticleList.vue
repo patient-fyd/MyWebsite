@@ -15,9 +15,10 @@
           @category-change="onCategoryChange"
       />
 
-      <el-select v-model="selectedTag" placeholder="选择标签" @change="filterArticles">
-        <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.name"></el-option>
-      </el-select>
+      <TagFilter
+          :tags="tags"
+          @tag-change="onTagChange"
+      />
     </div>
 
     <!-- 文章列表 -->
