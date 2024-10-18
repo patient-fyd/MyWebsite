@@ -257,21 +257,30 @@ func DeletePost(c *gin.Context) {
 
 // SearchPosts 根据标题、内容、标签进行搜索
 func SearchPosts(c *gin.Context) {
-	db := config.DB
 	var posts []models.Post
+	db := config.DB
 
 	// 获取查询参数
-	query := c.Query("q")
+	keyword := c.Query("keyword") // 搜索的关键词（在标题和内容中搜索）
+	tag := c.Query("tag")         // 根据标签搜索
 
-	// 搜索文章标题、内容和标签
-	result := db.Joins("LEFT JOIN post_tags ON post_tags.post_id = posts.id").
-		Joins("LEFT JOIN tags ON post_tags.tag_id = tags.id").
-		Where("posts.title LIKE ? OR posts.content LIKE ? OR tags.name LIKE ?", "%"+query+"%", "%"+query+"%", "%"+query+"%").
-		Group("posts.id").
-		Find(&posts)
+	query := db.Preload("Author").Preload("Category").Preload("Tags")
 
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "搜索失败"})
+	// 如果有关键字，按标题和内容进行搜索
+	if keyword != "" {
+		query = query.Where("title LIKE ? OR content LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+	}
+
+	// 如果有标签，根据标签进行搜索
+	if tag != "" {
+		query = query.Joins("JOIN post_tags ON post_tags.post_id = posts.id").
+			Joins("JOIN tags ON post_tags.tag_id = tags.id").
+			Where("tags.name = ?", tag)
+	}
+
+	// 执行查询
+	if err := query.Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "搜索文章失败：" + err.Error()})
 		return
 	}
 
