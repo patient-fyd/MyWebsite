@@ -31,12 +31,11 @@
     </el-card>
 
     <!-- 分页 -->
-    <el-pagination
-        background
-        layout="prev, pager, next"
+    <Pagination
         :total="filteredArticles.length"
-        :page-size="pageSize"
-        @current-change="handlePageChange"
+        :pageSize="pageSize"
+        :currentPage="currentPage"
+        @page-change="handlePageChange"
     />
   </div>
 </template>
