@@ -1,12 +1,7 @@
 <template>
   <div>
     <!-- 搜索框 -->
-    <el-input
-        v-model="searchQuery"
-        placeholder="搜索文章"
-        class="search-box"
-        @input="onSearch"
-    />
+    <SearchBar @search="onSearch" />
 
     <!-- 分类和标签筛选 -->
     <div class="filter-section">
