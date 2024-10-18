@@ -3,7 +3,7 @@
     <div class="navbar">
       <!-- 网站Logo -->
       <div class="logo">
-        <img src="@/assets/logo.png" alt="网站Logo" />
+        <img src="@/assets/vue.svg" alt="网站Logo" />
       </div>
 
       <!-- 导航链接 -->
