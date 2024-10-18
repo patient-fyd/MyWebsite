@@ -61,11 +61,19 @@ func UpdateTag(c *gin.Context) {
 		return
 	}
 
+	// 定义一个结构体来接收更新数据（避免更新ID）
+	var input struct {
+		Name string `json:"name"`
+	}
+
 	// 绑定更新数据
-	if err := c.ShouldBindJSON(&tag); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的数据格式：" + err.Error()})
 		return
 	}
+
+	// 更新标签名称
+	tag.Name = input.Name
 
 	// 保存更新后的标签
 	if err := db.Save(&tag).Error; err != nil {
