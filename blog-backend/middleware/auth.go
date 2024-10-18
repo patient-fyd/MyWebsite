@@ -49,9 +49,15 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 将用户信息存入上下文
-		c.Set("user_id", uint(claims["user_id"].(float64)))
-		c.Set("username", claims["username"].(string))
-		c.Set("role", claims["role"].(string))
+		userID, ok := claims["user_id"].(float64)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "令牌中缺少用户ID"})
+			c.Abort()
+			return
+		}
+
+		// 设置 userID 到上下文
+		c.Set("userID", uint(userID))
 
 		// 继续处理下一个中间件/路由
 		c.Next()
