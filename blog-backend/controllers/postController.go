@@ -172,14 +172,56 @@ func UpdatePost(c *gin.Context) {
 	db := config.DB
 	postID := c.Param("id")
 
-	if err := db.Where("id = ?", postID).First(&post).Error; err != nil {
+	// 查找文章
+	if err := db.Preload("Tags").Where("id = ?", postID).First(&post).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "文章未找到"})
 		return
 	}
 
-	// 绑定传入的JSON数据到post对象
-	if err := c.ShouldBindJSON(&post); err != nil {
+	// 定义一个输入结构体来接收更新数据
+	var input struct {
+		Title      string   `json:"title"`
+		Content    string   `json:"content"`
+		CategoryID uint     `json:"category_id"`
+		Tags       []string `json:"tags"` // 标签的名称数组
+	}
+
+	// 绑定传入的JSON数据到input对象
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的数据格式：" + err.Error()})
+		return
+	}
+
+	// 更新文章的标题、内容和分类
+	post.Title = input.Title
+	post.Content = input.Content
+	post.CategoryID = input.CategoryID
+
+	// 处理标签更新
+	var tags []models.Tag
+	for _, tagName := range input.Tags {
+		tagName = strings.TrimSpace(tagName) // 去除标签名称的空格
+		if tagName == "" {
+			continue // 跳过空标签
+		}
+		var tag models.Tag
+		// 查找或创建标签
+		if err := db.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName}).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "更新标签失败：" + err.Error()})
+			return
+		}
+		tags = append(tags, tag)
+	}
+
+	// 检查是否有有效的标签
+	if len(tags) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
+		return
+	}
+
+	// 更新标签关联关系
+	if err := db.Model(&post).Association("Tags").Replace(tags); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新标签关联失败：" + err.Error()})
 		return
 	}
 
