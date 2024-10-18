@@ -4,8 +4,10 @@
     <AppNavbar />
 
     <div class="main-layout">
-      <!-- 主内容区域（路由视图） -->
-      <router-view />
+      <!-- 主内容区域 -->
+      <div class="main-content">
+        <router-view />  <!-- 动态加载页面，比如Home.vue，会通过路由加载到这里 -->
+      </div>
 
       <!-- 热门文章侧边栏 -->
       <aside class="sidebar">
@@ -26,7 +28,7 @@ import PopularPosts from './components/home/PopularPosts.vue';  // 热门文章�
 </script>
 
 <style scoped>
-/* 全局布局样式 */
+/* 设置全局布局 */
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -39,15 +41,26 @@ import PopularPosts from './components/home/PopularPosts.vue';  // 热门文章�
 
 .main-layout {
   display: flex;
-  padding: 20px;
   justify-content: space-between;
+  padding: 20px;
 }
 
+/* 主内容区域样式 */
+.main-content {
+  flex: 3;
+  padding-right: 20px;
+}
+
+/* 侧边栏样式 */
 .sidebar {
   flex: 1;
   max-width: 300px;
-  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #eaeaea;
 }
 
-/* 你可以根据需要自定义更多的样式 */
+/* 页脚与导航栏间距样式 */
+footer {
+  margin-top: 20px;
+}
 </style>
