@@ -10,9 +10,10 @@
 
     <!-- 分类和标签筛选 -->
     <div class="filter-section">
-      <el-select v-model="selectedCategory" placeholder="选择分类" @change="filterArticles">
-        <el-option v-for="category in categories" :key="category.id" :label="category.name" :value="category.name"></el-option>
-      </el-select>
+      <CategoryFilter
+          :categories="categories"
+          @category-change="onCategoryChange"
+      />
 
       <el-select v-model="selectedTag" placeholder="选择标签" @change="filterArticles">
         <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.name"></el-option>
