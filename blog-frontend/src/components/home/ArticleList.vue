@@ -39,7 +39,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useAxios } from '@/composables/useAxios'; // 自定义 composable 获取 Axios 实例
+import { useAxios } from '@/composables/useAxios.js'; // 自定义 composable 获取 Axios 实例
 import { ElMessage } from 'element-plus';
 
 // 数据和状态
