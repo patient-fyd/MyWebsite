@@ -56,7 +56,7 @@ const pageSize = ref(10); // 每页显示的文章数量
 
 // 获取文章数据
 const { axios } = useAxios();
-axios.get('/api/articles').then(response => {
+axios.get('/api/posts').then(response => {
   articles.value = response.data;
   filteredArticles.value = articles.value;
 }).catch(error => {

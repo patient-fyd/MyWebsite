@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { ref } from 'vue';
 
 // 接收父组件传递的 props
 const props = defineProps({

@@ -36,10 +36,19 @@
       </el-dropdown>
 
       <!-- 登录/注册按钮 -->
-      <div v-else class="auth-buttons">
+<!--      <div v-else class="auth-buttons">
         <el-button type="primary" @click="login">登录</el-button>
         <el-button type="success" @click="register">注册</el-button>
+      </div>-->
+
+      <div class="button-container">
+        <!-- 按钮 1 -->
+        <a class="button act-now" @click="login">登录</a>
+
+        <!-- 按钮 2 -->
+        <a href="#" class="button menu-icon">&#9776;</a> <!-- Unicode for hamburger icon -->
       </div>
+
     </div>
   </el-header>
 </template>
@@ -91,6 +100,11 @@ const logout = () => {
 .nav-links {
   flex: 1;
   margin-left: 20px;
+  background-color: transparent;
+}
+
+ .nav-links .el-menu-item {
+  border-radius: 10px;
 }
 
 .search-bar {
@@ -104,5 +118,49 @@ const logout = () => {
 
 .user-menu {
   margin-left: 20px;
+}
+
+.search-bar + .auth-buttons {
+  margin-left: 20px;
+}
+
+/* 按钮样式 */
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  display: inline-block;
+  padding: 4px 16px;
+  font-size: 14px;
+  font-family: "WebCentraNo1", ui-sans-serif, system-ui, sans-serif;
+  color: #000000;
+  text-decoration: none;
+  border-radius: 22px;
+  background-color: #fdeb8c;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 30px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* 按钮悬停时的效果 */
+.button:hover {
+  background-color: #ffeb3b; /* 悬停时更亮的背景颜色 */
+  transform: scale(1.05); /* 轻微放大 */
+}
+
+/* 特定的菜单图标按钮样式 */
+.menu-icon {
+  font-size: 18px;
+  padding: 4px 10px;
+  background-color: #fdeb8c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%; /* 圆形按钮 */
 }
 </style>
