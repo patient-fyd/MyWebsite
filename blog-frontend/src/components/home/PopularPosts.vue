@@ -9,9 +9,9 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import { useAxios } from '@/composables/useAxios.js'; // 自定义 Axios 组合式 API
+import { useAxios } from '@/composables/useAxios.ts'; // 自定义 Axios 组合式 API
 
 // 热门文章数据
 const popularPosts = ref([]);

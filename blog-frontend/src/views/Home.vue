@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 // 这个组件无需额外的逻辑，只需简单布局即可。
 </script>
 

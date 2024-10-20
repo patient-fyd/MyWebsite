@@ -36,11 +36,6 @@
       </el-dropdown>
 
       <!-- 登录/注册按钮 -->
-<!--      <div v-else class="auth-buttons">
-        <el-button type="primary" @click="login">登录</el-button>
-        <el-button type="success" @click="register">注册</el-button>
-      </div>-->
-
       <div class="button-container">
         <!-- 按钮 1 -->
         <a class="button act-now" @click="login">登录</a>
@@ -48,39 +43,44 @@
         <!-- 按钮 2 -->
         <a href="#" class="button menu-icon">&#9776;</a> <!-- Unicode for hamburger icon -->
       </div>
-
     </div>
   </el-header>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, ArrowDown } from '@element-plus/icons-vue';
 
+// 定义用户信息的类型
+interface User {
+  name: string;
+}
+
 // 假设用户状态来自 Store 或全局状态
-const isAuthenticated = ref(false); // 你可以从 store 或 API 获取用户认证状态
-const user = ref({ name: 'John Doe' });
+const isAuthenticated = ref<boolean>(false); // 是否认证的状态
+const user = ref<User>({ name: 'John Doe' }); // 用户信息
 
 // 搜索功能
-const searchQuery = ref('');
+const searchQuery = ref<string>(''); // 搜索框输入内容
 const router = useRouter();
-const onSearch = () => {
+
+const onSearch = (): void => {
   if (searchQuery.value) {
     router.push({ path: `/search`, query: { q: searchQuery.value } });
   }
 };
 
 // 模拟登录和注册操作
-const login = () => {
+const login = (): void => {
   router.push('/login');
 };
 
-const register = () => {
+const register = (): void => {
   router.push('/register');
 };
 
-const logout = () => {
+const logout = (): void => {
   isAuthenticated.value = false;
   router.push('/');
 };
@@ -103,7 +103,7 @@ const logout = () => {
   background-color: transparent;
 }
 
- .nav-links .el-menu-item {
+.nav-links .el-menu-item {
   border-radius: 10px;
 }
 

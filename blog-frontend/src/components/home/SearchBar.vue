@@ -11,7 +11,7 @@
   </el-input>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 import { defineEmits } from 'vue';
 import { Search } from '@element-plus/icons-vue';

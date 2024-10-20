@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 // 导入全局组件
 import AppNavbar from './components/common/Navbar.vue';  // 导航栏组件
 import AppFooter from './components/common/Footer.vue';  // 页脚组件

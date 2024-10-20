@@ -4,7 +4,7 @@
   </el-select>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue';
 
 // 接收父组件传递的 props

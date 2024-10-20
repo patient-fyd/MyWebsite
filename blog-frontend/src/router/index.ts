@@ -1,7 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '@/views/Home.vue';
 
-const routes = [
+// 定义路由类型
+const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: 'Home',

@@ -27,7 +27,7 @@
   </el-footer>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 const openLink = (url) => {
   window.open(url, '_blank');
 };
