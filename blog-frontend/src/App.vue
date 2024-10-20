@@ -42,9 +42,9 @@ html, body {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* 视口高度的100% */
   margin: 0;
   padding: 0;
+  background-color: #f5f5f5;
 }
 .header {
   width: 100%;
@@ -57,26 +57,21 @@ html, body {
   width: 100%;
   padding: 20px;
   box-sizing: border-box; /* 确保 padding 不影响整体宽度 */
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 /* Section 占 70% */
 .section {
   width: 70%; /* 左边占 70% */
-  margin-right: 20px; /* 和 Sidebar 的间距 */
-  background-color: #f5f5f5;
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
-  border: 1px solid #ddd;
 }
 
 /* Sidebar 占 25% */
 .sidebar {
   width: 25%; /* 右边占 25% */
-  background-color: #ccc;
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
-  border: 1px solid #aaa;
 }
 
 

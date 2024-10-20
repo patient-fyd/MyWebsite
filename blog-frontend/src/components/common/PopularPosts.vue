@@ -1,64 +1,77 @@
 <template>
   <div class="popular-posts">
-    <h3>热门文章</h3>
-    <ul class="post-list">
-      <li v-for="post in popularPosts" :key="post.id">
-        <a @click="goToPost(post.id)">{{ post.title }}</a>
-      </li>
-    </ul>
+    <div class="title">
+      <h3>全站热门</h3>
+    </div>
+    <div class="hot-posts">
+      <!-- 热门文章列表 -->
+      <ul class="post-list">
+        <li v-for="(post, index) in posts" :key="index" class="post-item">
+          <a href="#" class="post-link">{{ post }}</a>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { useAxios } from '@/composables/useAxios.js'; // 自定义 Axios 组合式 API
-
-// 定义热门文章的数据类型
-interface Post {
-  id: number;
-  title: string;
-}
-
-// 热门文章数据
-const popularPosts = ref<Post[]>([]);
-
-// 获取热门文章数据
-const { axios } = useAxios();
-onMounted(() => {
-  axios.get<Post[]>('/api/popular-posts').then(response => {
-    popularPosts.value = response.data;
-  });
-});
-
-// 跳转到热门文章详情
-const goToPost = (id: number): void => {
-  window.location.href = `/article/${id}`; // 通过路由跳转到对应文章页面
-};
+<script setup lang="ts">
+// 假设从服务端获取的热门文章数据
+const posts = [
+  '程序员技术练级攻略',
+  '“火柴根式”程序员面试题',
+  '简明 Vim 练级攻略',
+  '“作坏保的程序员，从不用百度开始”',
+  'TCP 的那些事儿（上）',
+  '做个环保主义的程序员',
+  '编程能力与编程年龄',
+  'AWK 简明教程',
+  '二维码的生成细节和原理',
+  'sed 简明教程',
+  '如何学好C语言',
+  '如何超越大多数人',
+  '疫苗：Java HashMap的死循环'
+];
 </script>
 
 <style scoped>
+/* 外层容器 */
 .popular-posts {
-  padding: 10px;
-  background-color: #f9f9f9;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.popular-posts h3 {
+
+/* 标题样式 */
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-left: 3px solid #3c74b3;
+  padding-left: 8px;
+}
+
+/* 列表样式 */
+.post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 每个文章条目 */
+.post-item {
   margin-bottom: 10px;
 }
-.post-list {
-  list-style-type: none;
-  padding: 0;
-}
 
-.post-list li {
-  margin-bottom: 8px;
-}
-
-.post-list a {
-  color: #007bff;
+/* 链接样式 */
+.post-link {
   text-decoration: none;
+  color: #333;
+  font-size: 14px;
 }
 
-.post-list a:hover {
+.post-link:hover {
   text-decoration: underline;
+  color: #3c74b3;
 }
 </style>

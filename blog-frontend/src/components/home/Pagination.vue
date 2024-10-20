@@ -1,99 +1,125 @@
 <template>
-  <div class="pagination">
-    <button
-        :disabled="currentPage === 1"
-        @click="onPrevPage"
-    >
-      上一页
-    </button>
+  <div class="pagination-container">
+    <!-- 显示当前页/总页数 -->
+    <div class="pagination-info">第 {{ currentPage }} / {{ totalPages }} 页</div>
 
-    <span v-for="page in totalPages" :key="page" class="page-number">
-      <button
-          :class="{ active: page === currentPage }"
-          @click="onPageChange(page)"
+    <!-- 页码列表 -->
+    <ul class="pagination">
+      <!-- 首页 -->
+      <li @click="goToPage(1)" class="page-item" :class="{ disabled: currentPage === 1 }">
+        «
+      </li>
+
+      <!-- 数字页码显示 -->
+      <li
+          v-for="page in visiblePages"
+          :key="page"
+          @click="goToPage(page)"
+          class="page-item"
+          :class="{ active: currentPage === page }"
       >
         {{ page }}
-      </button>
-    </span>
+      </li>
 
-    <button
-        :disabled="currentPage === totalPages"
-        @click="onNextPage"
-    >
-      下一页
-    </button>
+      <!-- 省略号 -->
+      <li v-if="showEllipsisBefore">...</li>
+      <li v-if="showEllipsisAfter">...</li>
+
+      <!-- 末页 -->
+      <li @click="goToPage(totalPages)" class="page-item" :class="{ disabled: currentPage === totalPages }">
+        »
+      </li>
+      <li @click="goToPage(totalPages)" class="page-item" :class="{ disabled: currentPage === totalPages }">
+        末页
+      </li>
+    </ul>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { computed } from 'vue';
+<script setup lang="ts">
+import { computed, ref } from 'vue';
 
-// 定义 Props 的类型
-interface PaginationProps {
-  total: number;
-  pageSize: number;
-  currentPage: number;
-}
+// 页码相关数据
+const currentPage = ref(1);
+const totalPages = ref(74);
 
-// 接收父组件传递的 props，并明确类型
-const props = defineProps<PaginationProps>();
+// 根据当前页计算要显示的页码
+const visiblePages = computed(() => {
+  const pages = [];
+  const maxVisible = 10;
+  const half = Math.floor(maxVisible / 2);
 
-// 向父组件发出事件
-const emit = defineEmits<{
-  (event: 'page-change', page: number): void;
-}>();
+  let start = Math.max(1, currentPage.value - half);
+  let end = Math.min(totalPages.value, currentPage.value + half);
 
-// 计算总页数
-const totalPages = computed(() => Math.ceil(props.total / props.pageSize));
-
-// 页码变化处理
-const onPageChange = (page: number): void => {
-  emit('page-change', page);
-};
-
-// 上一页处理
-const onPrevPage = (): void => {
-  if (props.currentPage > 1) {
-    onPageChange(props.currentPage - 1);
+  if (start === 1) {
+    end = Math.min(totalPages.value, maxVisible);
   }
-};
-
-// 下一页处理
-const onNextPage = (): void => {
-  if (props.currentPage < totalPages.value) {
-    onPageChange(props.currentPage + 1);
+  if (end === totalPages.value) {
+    start = Math.max(1, totalPages.value - maxVisible + 1);
   }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+});
+
+// 是否显示省略号
+const showEllipsisBefore = computed(() => visiblePages.value[0] > 1);
+const showEllipsisAfter = computed(() => visiblePages.value[visiblePages.value.length - 1] < totalPages.value);
+
+// 跳转页面
+const goToPage = (page: number) => {
+  if (page < 1 || page > totalPages.value || page === currentPage.value) return;
+  currentPage.value = page;
 };
 </script>
 
 <style scoped>
+.pagination-container {
+  text-align: center;
+  margin-bottom: 20px;
+  margin-right: 20px;
+  margin-left: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-size: 14px;
+  color: #4a6a7b;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-info {
+  margin-bottom: 10px;
+}
+
 .pagination {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  display: inline-flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: #f1f1f1;
+.page-item {
+  padding: 0 10px;
   cursor: pointer;
+  color: #4a6a7b;
+  border-radius: 5px;
 }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.page-item:hover {
+  background-color: #e0e0e0;
 }
 
-.page-number button {
-  padding: 8px 12px;
-  margin: 0 4px;
-}
-
-button.active {
+.page-item.active {
   font-weight: bold;
-  background-color: #2196f3;
-  color: white;
+  color: #000;
+}
+
+.page-item.disabled {
+  cursor: not-allowed;
+  color: #ccc;
 }
 </style>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-//无
 import SearchBar from "@/components/common/SearchBar.vue";
 import PopularPosts from "@/components/common/PopularPosts.vue";
 import CategoryFilter from "@/components/common/CategoryFilter.vue";
 import TagFilter from "@/components/common/TagFilter.vue";
+import OtherActions from "@/components/common/OtherActions.vue";
 </script>
 
 <template>
@@ -20,12 +20,13 @@ import TagFilter from "@/components/common/TagFilter.vue";
     <div class="tagBlock">
       <TagFilter tags="" default-tag="" />
     </div>
-    <div class="">
-
+    <div class="otherBlock">
+      <OtherActions />
     </div>
   </div>
 </template>
 
 <style scoped>
+
 
 </style>

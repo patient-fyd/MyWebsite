@@ -21,7 +21,7 @@
             <router-link to="/guestbook" exact-active-class="active">留言小本</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/about" exact-active-class="active">关于</router-link>
+            <router-link to="/about" exact-active-class="active">关于更多</router-link>
           </li>
         </ul>
       </div>
@@ -42,17 +42,10 @@
   padding: 10px 25px;
   transition: all 0.3s ease;
   background-color: #ffffff;
+  position: relative;
 }
 
-.sticky .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+
 
 /* 设置 Logo 图片样式 */
 .logo img {

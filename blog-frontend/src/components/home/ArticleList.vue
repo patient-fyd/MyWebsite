@@ -1,172 +1,98 @@
 <template>
-  <div>
-    <!-- 搜索框 -->
-    <SearchBar @search="onSearch" />
+  <div class="article-list">
+    <!-- 展示多个文章的列表 -->
+    <div v-for="(article, index) in articles" :key="index" class="article-item">
+      <!-- 顶部部分，可能是文章的头部信息，如标题、作者信息等 -->
+      <div class="article-header">
+        <h2>{{ article.title }}</h2>
+        <p>{{ article.author }}</p>
+      </div>
 
-    <!-- 分类和标签筛选 -->
-    <div class="filter-section">
-      <CategoryFilter
-          :categories="categories"
-          @category-change="onCategoryChange"
-      />
+      <!-- 文章内容展示 -->
+      <div class="article-content">
+        <p>{{ article.summary }}</p>
+      </div>
 
-      <TagFilter
-          :tags="tags"
-          @tag-change="onTagChange"
-      />
-    </div>
-
-    <!-- 文章列表 -->
-    <div v-for="article in paginatedArticles" :key="article.id" class="article-card">
-      <h3>{{ article.title }}</h3>
-      <p>{{ article.summary }}</p>
-      <button class="read-more-button" @click="goToArticle(article.id)">阅读更多</button>
-    </div>
-
-    <!-- 分页 -->
-    <div class="pagination">
-      <button @click="handlePageChange(currentPage - 1)" :disabled="currentPage === 1">上一页</button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button @click="handlePageChange(currentPage + 1)" :disabled="currentPage === totalPages">下一页</button>
+      <!-- 底部的按钮，可能是阅读更多或分享按钮 -->
+      <div class="article-footer">
+        <button @click="readMore(article.id)">阅读更多</button>
+      </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, computed } from 'vue';
-import { useAxios } from '@/composables/useAxios.ts';
+<script setup lang="ts">
+import { ref } from 'vue';
 
-// 定义数据类型
-interface Article {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  category: string;
-  tags: string[];
-}
+// 假设从服务器获取的文章数据
+const articles = ref([
+  { id: 1, title: '文章标题1', author: '作者1', summary: '文章摘要1...' },
+  { id: 2, title: '文章标题2', author: '作者2', summary: '文章摘要2...' },
+  { id: 3, title: '文章标题3', author: '作者3', summary: '文章摘要3...' },
+  { id: 4, title: '文章标题4', author: '作者4', summary: '文章摘要4...'},
+  { id: 5, title: '文章标题5', author: '作者5', summary: '文章摘要5...'},
+  { id: 6, title: '文章标题6', author: '作者6', summary: '文章摘要6...'},
+  // 继续添加更多文章
+]);
 
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-}
-
-// 数据和状态
-const articles = ref<Article[]>([]);
-const filteredArticles = ref<Article[]>([]);
-const paginatedArticles = ref<Article[]>([]);
-const categories = ref<Category[]>([]);
-const tags = ref<Tag[]>([]);
-const searchQuery = ref<string>('');
-const selectedCategory = ref<string>('');
-const selectedTag = ref<string>('');
-const currentPage = ref<number>(1);
-const pageSize = ref<number>(10); // 每页显示的文章数量
-
-// 获取文章数据
-const { axios } = useAxios();
-axios.get<Article[]>('/api/posts').then(response => {
-  articles.value = response.data;
-  filteredArticles.value = articles.value;
-}).catch(error => {
-  alert('获取文章数据失败');
-});
-
-// 获取分类和标签数据
-axios.get<Category[]>('/api/categories').then(response => {
-  categories.value = response.data;
-});
-axios.get<Tag[]>('/api/tags').then(response => {
-  tags.value = response.data;
-});
-
-// 分页逻辑
-const handlePageChange = (page: number): void => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    updatePaginatedArticles();
-  }
+// 阅读更多的功能，可以自定义跳转或展示逻辑
+const readMore = (id: number) => {
+  console.log('阅读更多文章，ID:', id);
+  // 这里可以实现跳转到文章详情页的逻辑
 };
-
-const totalPages = computed<number>(() => {
-  return Math.ceil(filteredArticles.value.length / pageSize.value);
-});
-
-const updatePaginatedArticles = (): void => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  paginatedArticles.value = filteredArticles.value.slice(start, end);
-};
-
-// 根据分类、标签和搜索查询过滤文章
-const filterArticles = (): void => {
-  filteredArticles.value = articles.value.filter(article => {
-    const matchesCategory = selectedCategory.value ? article.category === selectedCategory.value : true;
-    const matchesTag = selectedTag.value ? article.tags.includes(selectedTag.value) : true;
-    const matchesSearch = article.title.includes(searchQuery.value) || article.content.includes(searchQuery.value);
-    return matchesCategory && matchesTag && matchesSearch;
-  });
-  updatePaginatedArticles();
-};
-
-// 处理搜索
-const onSearch = (): void => {
-  filterArticles();
-};
-
-// 页面跳转
-const goToArticle = (id: number): void => {
-  window.location.href = `/article/${id}`;
-};
-
-// 初始化分页内容
-updatePaginatedArticles();
 </script>
 
 <style scoped>
-.search-box {
-  margin-bottom: 20px;
-}
-.filter-section {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
-}
-.article-card {
-  margin-bottom: 20px;
+.article-list {
   padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 每个文章之间的间距 */
 }
-.read-more-button {
-  background-color: #2196f3;
+
+.article-item {
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.article-header {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.article-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.article-header p {
+  margin: 5px 0 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.article-content {
+  height: 100px;
+  margin: 20px 0;
+}
+
+.article-footer {
+  text-align: center;
+}
+
+.article-footer button {
+  padding: 10px 20px;
+  background-color: #3c74b3;
   color: white;
   border: none;
-  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-.read-more-button:hover {
-  background-color: #1976d2;
-}
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.pagination button {
-  background-color: #f1f1f1;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-}
-.pagination button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+
+.article-footer button:hover {
+  background-color: #2e5991;
 }
 </style>
