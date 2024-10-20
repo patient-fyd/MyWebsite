@@ -1,26 +1,12 @@
 <template>
   <div class="home">
-    <div class="content">
-      <!-- 左侧文字区域 -->
-      <div class="text-section">
-        <h1>轻松编程，无惧信息差</h1>
-        <p>
-          💻这是一个专注于编程技术分享的个人网站，旨在帮助初学者从零开始轻松入门编程。
-          通过打破信息壁垒，提供细致的学习步骤和教程，网站不仅让编程变得更加简单和易于理解，
-          还通过深入浅出的方式覆盖编程的每个关键环节，帮助用户掌握从基础到进阶的知识。
-        </p>
-      </div>
 
-      <!-- 右侧图片区域 -->
-      <div class="image-section">
-        <img src="@/assets/homeIMG.jpg" />
-      </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 // 这个组件无需额外的逻辑，只需简单布局即可。
+import GoalView from "@/components/common/GoalView.vue";
 </script>
 
 <style scoped>

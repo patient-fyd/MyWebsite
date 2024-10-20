@@ -1,49 +1,49 @@
 <template>
-  <el-footer class="footer">
+  <footer class="footer">
     <div class="footer-content">
-      <!-- 左侧：版权信息 -->
-      <div class="copyright">
-        &copy; 2024 YourWebsite. All rights reserved.
-      </div>
+      <!-- 版权信息 -->
+      <p>Copyright © 2024 GFY . All rights reserved.</p>
 
-      <!-- 中间：备案号 -->
-      <div class="record-number">
-        <a href="https://beian.miit.gov.cn/" target="_blank">赣ICP备2024046184号-1</a>
-      </div>
+      <!-- 备案号 -->
+      <p>
+        备案号：
+        <a
+            href="http://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+          赣ICP备2024046184号
+        </a>
+      </p>
     </div>
-  </el-footer>
+  </footer>
 </template>
 
-<script lang="ts" setup>
-/* */
+<script setup lang="ts">
+// 不需要额外的逻辑，仅渲染模板
 </script>
 
 <style scoped>
 .footer {
+  background-color: #f5f5f5; /* 背景颜色 */
+  color: #333; /* 文字颜色 */
   padding: 20px;
-  background-color: #f8f9fa;
-  text-align: center;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.record-number {
-  flex: 1;
-  text-align: center;
+  text-align: center; /* 文本居中 */
   font-size: 14px;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
 }
 
-.social-links {
-  display: flex;
-  gap: 10px;
+.footer-content p {
+  margin: 5px 0;
 }
 
-.social-links i {
-  font-size: 24px;
-  cursor: pointer;
+@media (max-width: 768px) {
+  .footer {
+    padding: 15px;
+    font-size: 12px;
+  }
 }
 </style>

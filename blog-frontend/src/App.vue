@@ -1,61 +1,84 @@
 <template>
   <div id="app">
-    <AppNavbar />
-
-    <div class="main-layout">
-      <!-- 主内容区域 -->
-      <div class="main-content">
-        <router-view />
-      </div>
-
+    <div class="header">
+      <AppNavbar />
+      <GoalView />
     </div>
-
-    <!-- 页脚 -->
-    <AppFooter />
+    <div class="container">
+      <div class="content">
+        <div class="section">
+          <router-view />
+        </div>
+        <div class="sidebar">
+          <Common />
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <AppFooter />
+    </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
-// 导入全局组件
-import AppNavbar from './components/common/Navbar.vue';  // 导航栏组件
-import AppFooter from './components/common/Footer.vue';  // 页脚组件
+
+import AppNavbar from './components/common/Navbar.vue';
+import AppFooter from './components/common/Footer.vue';
+import GoalView from "@/components/common/GoalView.vue";
+import Common from "@/views/Common.vue";
 </script>
 
 <style scoped>
-/* 设置全局布局 */
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  padding: 0;
+
+html, body {
   margin: 0;
-  background-color: #8dc9e8;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.main-layout {
+#app {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  height: 100vh; /* 视口高度的100% */
+  margin: 0;
+  padding: 0;
+}
+.header {
+  width: 100%;
+}
+
+/* Content 区域 */
+.content {
+  display: flex;
+  flex: 1; /* 让 content 区域占据剩余的可用空间 */
+  width: 100%;
   padding: 20px;
-  max-width: 1200px; /* 添加最大宽度 */
-  margin: 0 auto;    /* 居中布局 */
+  box-sizing: border-box; /* 确保 padding 不影响整体宽度 */
+  justify-content: space-evenly;
 }
 
-/* 针对移动设备的布局调整 */
-@media (max-width: 768px) {
-  .main-layout {
-    flex-direction: column;  /* 竖向堆叠 */
-  }
-
-  .main-content {
-    padding-right: 0;
-  }
+/* Section 占 70% */
+.section {
+  width: 70%; /* 左边占 70% */
+  margin-right: 20px; /* 和 Sidebar 的间距 */
+  background-color: #f5f5f5;
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
 }
 
-/* 主内容区域样式 */
-.main-content {
-  flex: 3;
-  padding-right: 20px;
+/* Sidebar 占 25% */
+.sidebar {
+  width: 25%; /* 右边占 25% */
+  background-color: #ccc;
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #aaa;
 }
+
+
 
 </style>
