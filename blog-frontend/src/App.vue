@@ -46,6 +46,7 @@ html, body {
   padding: 0;
   background-color: #f5f5f5;
 }
+
 .header {
   width: 100%;
 }
@@ -73,7 +74,4 @@ html, body {
   padding: 10px;
   box-sizing: border-box;
 }
-
-
-
 </style>

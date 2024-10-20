@@ -32,7 +32,6 @@
   font-size: 14px;
   position: relative;
   bottom: 0;
-  width: 100%;
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
 }
 

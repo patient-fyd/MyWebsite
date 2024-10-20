@@ -39,25 +39,23 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 10px 25px;
+  padding: 10px;
   transition: all 0.3s ease;
   background-color: #ffffff;
   position: relative;
 }
 
-
-
 /* 设置 Logo 图片样式 */
 .logo img {
   max-width: 150px;
   height: auto;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .nav-container {
   position: relative;
   padding: 10px;
-  margin-right: 80px;
+  margin-right: 30px;
 }
 
 .nav-links {
@@ -77,11 +75,10 @@
 .nav-item a {
   text-decoration: none;
   font-size: 18px;
-  padding: 10px 20px;
+  padding: 10px;
   color: #333;
   transition: color 0.3s ease, border-bottom 0.3s ease;
   border-bottom: 2px solid #e0e0e0; /* 默认的底部线条颜色 */
-  padding-bottom: 10px;
 }
 
 .nav-item a.active {

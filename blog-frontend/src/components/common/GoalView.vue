@@ -2,7 +2,7 @@
   <div class="container">
     <div class="header">
       <div class="logo-title">
-        <h1>轻松编程，无惧信息差</h1>
+        <h1>轻松学编程，无惧信息差</h1>
       </div>
       <div class="subtitle">
         <p>这是一个专注于编程技术分享的个人网站，旨在帮助初学者从零开始轻松入门编程。
@@ -24,7 +24,6 @@
   justify-content: center;
   background-color: #8dc9e8; /* 背景颜色 */
   padding: 20px;
-  width: 100%;
   height: 180px; /* 整个容器的高度 */
 }
 
