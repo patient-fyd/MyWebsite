@@ -3,10 +3,11 @@
     <div class="content">
       <!-- 左侧文字区域 -->
       <div class="text-section">
-        <h1>Join the fight against global warming</h1>
+        <h1>轻松编程，无惧信息差</h1>
         <p>
-          Climate science states we must reduce our emissions as much as possible
-          and actively remove the rest with carbon dioxide removal.
+          💻这是一个专注于编程技术分享的个人网站，旨在帮助初学者从零开始轻松入门编程。
+          通过打破信息壁垒，提供细致的学习步骤和教程，网站不仅让编程变得更加简单和易于理解，
+          还通过深入浅出的方式覆盖编程的每个关键环节，帮助用户掌握从基础到进阶的知识。
         </p>
       </div>
 
@@ -32,6 +33,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px; /* 为内容和图片之间添加间距 */
 }
 
 .text-section {
@@ -58,8 +60,9 @@
 }
 
 .image-section img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 10px; /* 可选的圆角效果 */
+  width: 80%; /* 调整图片的宽度为 80% */
+  max-width: 400px; /* 设置图片的最大宽度为 400px */
+  height: auto; /* 保持图片的宽高比 */
+  border-radius: 10px; /* 圆角效果 */
 }
 </style>

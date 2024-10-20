@@ -28,16 +28,28 @@ import AppFooter from './components/common/Footer.vue';  // 页脚组件
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
   padding: 0;
   margin: 0;
-  background-color: #9ac7e5;
+  background-color: #8dc9e8;
 }
 
 .main-layout {
   display: flex;
   justify-content: space-between;
   padding: 20px;
+  max-width: 1200px; /* 添加最大宽度 */
+  margin: 0 auto;    /* 居中布局 */
+}
+
+/* 针对移动设备的布局调整 */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;  /* 竖向堆叠 */
+  }
+
+  .main-content {
+    padding-right: 0;
+  }
 }
 
 /* 主内容区域样式 */

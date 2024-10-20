@@ -1,12 +1,15 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Home from '@/views/Home.vue';
 
-// 定义路由类型
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: 'Home',
-        component: Home,
+        component: () => import('@/views/Home.vue'),
+    },
+    {
+        path: '/:pathMatch(.*)*', // 捕获所有未定义的路由
+        name: 'NotFound',
+        component: () => import('@/views/NotFound.vue'), // 定义你的404页面组件
     }
 ];
 

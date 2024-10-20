@@ -1,56 +1,41 @@
 <template>
-  <el-header>
+  <header>
     <div class="navbar">
       <!-- 网站Logo -->
       <div class="logo">
-        <img src="@/assets/vue.svg" alt="网站Logo" />
+        <img src="@/assets/logo-no-background.png" alt="网站Logo" />
       </div>
 
       <!-- 导航链接 -->
-      <el-menu class="nav-links" mode="horizontal" :router="true">
-        <el-menu-item index="/">首页</el-menu-item>
-        <el-menu-item index="/about">关于我们</el-menu-item>
-        <el-menu-item index="/archive">归档</el-menu-item>
-      </el-menu>
-
-      <!-- 搜索框 -->
-      <el-input
-          placeholder="搜索文章"
-          v-model="searchQuery"
-          @keyup.enter="onSearch"
-          class="search-bar"
-      >
-        <template #prepend>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
+      <nav class="nav-links">
+        <ul>
+          <li><a href="/">首页</a></li>
+          <li><a href="/about">关于我们</a></li>
+          <li><a href="/archive">归档</a></li>
+        </ul>
+      </nav>
 
       <!-- 用户菜单 -->
-      <el-dropdown v-if="isAuthenticated" class="user-menu">
-        <span class="el-dropdown-link">
-          {{ user.name }} <el-icon><ArrowDown /></el-icon>
-        </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item @click="logout">登出</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <div v-if="isAuthenticated" class="user-menu">
+        <div class="user-name">
+          {{ user.name }} <span class="arrow-down">&#x25BC;</span> <!-- Unicode for down arrow -->
+        </div>
+        <ul class="dropdown-menu">
+          <li @click="logout">登出</li>
+        </ul>
+      </div>
 
       <!-- 登录/注册按钮 -->
       <div class="button-container">
-        <!-- 按钮 1 -->
         <a class="button act-now" @click="login">登录</a>
-
-        <!-- 按钮 2 -->
         <a href="#" class="button menu-icon">&#9776;</a> <!-- Unicode for hamburger icon -->
       </div>
     </div>
-  </el-header>
+  </header>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { Search, ArrowDown } from '@element-plus/icons-vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 // 定义用户信息的类型
 interface User {
@@ -61,70 +46,101 @@ interface User {
 const isAuthenticated = ref<boolean>(false); // 是否认证的状态
 const user = ref<User>({ name: 'John Doe' }); // 用户信息
 
-// 搜索功能
-const searchQuery = ref<string>(''); // 搜索框输入内容
-const router = useRouter();
-
-const onSearch = (): void => {
-  if (searchQuery.value) {
-    router.push({ path: `/search`, query: { q: searchQuery.value } });
-  }
-};
-
 // 模拟登录和注册操作
 const login = (): void => {
   router.push('/login');
-};
-
-const register = (): void => {
-  router.push('/register');
 };
 
 const logout = (): void => {
   isAuthenticated.value = false;
   router.push('/');
 };
+
+// 定义一个状态来跟踪导航栏是否应固定
+const isSticky = ref(false);
+
+// 滚动事件处理函数
+const handleScroll = (): void => {
+  isSticky.value = window.scrollY > 100; // 当页面滚动超过100像素时，将导航栏设为固定
+};
+
+// 挂载和卸载滚动事件监听器
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <style scoped>
+/* 常规的导航栏样式 */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.sticky .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .logo img {
-  height: 40px;
+  max-width: 150px;
+  height: auto;
+  margin-top: 10px;
+  margin-left: 25px;
 }
 
-.nav-links {
-  flex: 1;
-  margin-left: 20px;
-  background-color: transparent;
-}
-
-.nav-links .el-menu-item {
-  border-radius: 10px;
-}
-
-.search-bar {
-  width: 300px;
-}
-
-.auth-buttons {
+/* 导航链接的容器样式 */
+.nav-links ul {
+  list-style-type: none;
   display: flex;
-  gap: 10px;
+  gap: 20px;
 }
 
+.nav-links a {
+  text-decoration: none;
+  font-size: 18px;
+  color: #333;
+}
+
+.nav-links a:hover {
+  font-weight: bold;
+}
+
+/* 用户菜单容器样式 */
 .user-menu {
   margin-left: 20px;
+  position: relative;
 }
 
-.search-bar + .auth-buttons {
-  margin-left: 20px;
+.user-menu .user-name {
+  cursor: pointer;
 }
 
-/* 按钮样式 */
+.user-menu .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-menu:hover .dropdown-menu {
+  display: block;
+}
+
 .button-container {
   display: flex;
   gap: 10px;
@@ -134,7 +150,6 @@ const logout = (): void => {
   display: inline-block;
   padding: 4px 16px;
   font-size: 14px;
-  font-family: "WebCentraNo1", ui-sans-serif, system-ui, sans-serif;
   color: #000000;
   text-decoration: none;
   border-radius: 22px;
@@ -145,13 +160,11 @@ const logout = (): void => {
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-/* 按钮悬停时的效果 */
 .button:hover {
-  background-color: #ffeb3b; /* 悬停时更亮的背景颜色 */
-  transform: scale(1.05); /* 轻微放大 */
+  background-color: #ffeb3b;
+  transform: scale(1.05);
 }
 
-/* 特定的菜单图标按钮样式 */
 .menu-icon {
   font-size: 18px;
   padding: 4px 10px;
@@ -161,6 +174,6 @@ const logout = (): void => {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 50%; /* 圆形按钮 */
+  border-radius: 50%;
 }
 </style>
