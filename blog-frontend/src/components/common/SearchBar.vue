@@ -59,7 +59,7 @@ const performSearch = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #3c74b3;
+  background-color: #8dc9e8;
   border: none;
   padding: 10px;
   cursor: pointer;
@@ -67,7 +67,7 @@ const performSearch = () => {
 }
 
 .search-button:hover {
-  background-color: #2e5991;
+  background-color: #47abef;
 }
 
 .search-button svg {

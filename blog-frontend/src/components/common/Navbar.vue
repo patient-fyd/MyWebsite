@@ -82,12 +82,12 @@
 }
 
 .nav-item a.active {
-  color: #3c74b3; /* 选中时的颜色 */
-  border-bottom: 2px solid #3c74b3; /* 选中时的底部线条颜色 */
+  color: #8dc9e8; /* 选中时的颜色 */
+  border-bottom: 2px solid #8dc9e8; /* 选中时的底部线条颜色 */
 }
 
 .nav-item a:hover {
   font-weight: bold;
-  color: #3c74b3;
+  color: #8dc9e8;
 }
 </style>

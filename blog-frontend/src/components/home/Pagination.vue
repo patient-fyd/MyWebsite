@@ -81,8 +81,6 @@ const goToPage = (page: number) => {
 .pagination-container {
   text-align: center;
   margin-bottom: 20px;
-  margin-right: 20px;
-  margin-left: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
   font-size: 14px;

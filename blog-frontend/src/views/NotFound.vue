@@ -20,7 +20,6 @@
   justify-content: center;
   height: 100vh;
   text-align: center;
-  background-color: #f9f9f9;
 }
 
 .not-found h1 {

@@ -44,7 +44,8 @@ const readMore = (id: number) => {
 
 <style scoped>
 .article-list {
-  padding: 20px;
+  padding-bottom: 20px;
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px; /* 每个文章之间的间距 */
@@ -84,7 +85,7 @@ const readMore = (id: number) => {
 
 .article-footer button {
   padding: 10px 20px;
-  background-color: #3c74b3;
+  background-color: #8dc9e8;
   color: white;
   border: none;
   border-radius: 5px;
@@ -93,6 +94,6 @@ const readMore = (id: number) => {
 }
 
 .article-footer button:hover {
-  background-color: #2e5991;
+  background-color: #47abef;
 }
 </style>
