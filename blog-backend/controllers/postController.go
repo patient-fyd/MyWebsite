@@ -57,6 +57,10 @@ func CreatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
 		return
 	}
+	
+	// 生成文章摘要，取前5行作为摘要
+	contentLines := strings.Split(input.Content, "\n")
+	summary := strings.Join(contentLines[:min(5, len(contentLines))], "\n") // 提取前5行
 
 	// 开启事务
 	err := config.DB.Transaction(func(tx *gorm.DB) error {
@@ -76,6 +80,7 @@ func CreatePost(c *gin.Context) {
 		post := models.Post{
 			Title:      input.Title,
 			Content:    input.Content,
+			Summary:    summary,
 			CategoryID: input.CategoryID,
 			AuthorID:   userIDUint, // 使用转换后的作者ID
 			Tags:       tags,

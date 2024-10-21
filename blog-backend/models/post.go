@@ -9,6 +9,7 @@ type Post struct {
 	ID         uint           `gorm:"primaryKey" json:"id"`
 	Title      string         `json:"title"`
 	Content    string         `json:"content"`
+	Summary    string         `gorm:"type:text" json:"summary"`
 	CategoryID uint           `json:"category_id"`
 	Category   Category       `gorm:"foreignKey:CategoryID" json:"category"`
 	AuthorID   uint           `json:"author_id"`
