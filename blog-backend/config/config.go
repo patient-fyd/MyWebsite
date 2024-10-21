@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/patient-fyd/blog-backend/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
 )
 
 var DB *gorm.DB

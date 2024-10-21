@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
-	"net/http"
-	"time"
 )
 
 // AuthMiddleware 是身份验证中间件
@@ -65,7 +66,7 @@ func AuthMiddleware() gin.HandlerFunc {
 }
 
 // GenerateToken 生成访问令牌和刷新令牌
-func GenerateToken(userID uint, username, role string) (string, string, error) {
+func GenerateToken(userID uint32, username, role string) (string, string, error) {
 	// 创建访问令牌，有效期为 24 小时
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  userID,

@@ -1,10 +1,11 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/models"
-	"net/http"
 )
 
 // GetCategories 获取分类列表

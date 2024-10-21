@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/middleware"
 	"github.com/patient-fyd/blog-backend/models"
-	"net/http"
 )
 
 // CreateComment 添加评论
@@ -22,7 +23,7 @@ func CreateComment(c *gin.Context) {
 	// 检查用户是否已登录
 	if userIDInterface, exists := c.Get("user_id"); exists {
 		// 将 interface{} 类型的 userID 转换为 uint
-		userID := userIDInterface.(uint)
+		userID := userIDInterface.(uint32)
 		comment.UserID = &userID // 为评论绑定登录用户的 ID
 	}
 
@@ -74,7 +75,7 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	userID := userIDInterface.(uint)
+	userID := userIDInterface.(uint32)
 
 	// 检查用户是否是评论本人或管理员
 	if comment.UserID != nil && *comment.UserID != userID {

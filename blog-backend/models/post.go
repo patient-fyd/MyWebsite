@@ -1,23 +1,24 @@
 package models
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Post struct {
-	ID         uint           `gorm:"primaryKey" json:"id"`
+	ID         uint32         `gorm:"primaryKey" json:"id"`
 	Title      string         `json:"title"`
 	Content    string         `json:"content"`
 	Summary    string         `gorm:"type:text" json:"summary"`
-	CategoryID uint           `json:"category_id"`
+	CategoryID uint32         `json:"category_id"`
 	Category   Category       `gorm:"foreignKey:CategoryID" json:"category"`
-	AuthorID   uint           `json:"author_id"`
+	AuthorID   uint32         `json:"author_id"`
 	Author     User           `gorm:"foreignKey:AuthorID" json:"author"`
 	Tags       []Tag          `gorm:"many2many:post_tags;" json:"tags"`
 	Comments   []Comment      `gorm:"foreignKey:PostID" json:"comments"`
-	Views      uint           `json:"views"`
+	Views      uint32         `json:"views"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"` // 用于软删除
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 }

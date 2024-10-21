@@ -5,14 +5,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/patient-fyd/blog-backend/config"
-	"github.com/patient-fyd/blog-backend/models"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/smtp"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/patient-fyd/blog-backend/config"
+	"github.com/patient-fyd/blog-backend/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // 修改密码控制器

@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/middleware"
 	"github.com/patient-fyd/blog-backend/models"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 // 注册
@@ -179,7 +180,7 @@ func RefreshToken(c *gin.Context) {
 		}
 
 		// 生成新的访问令牌
-		accessToken, _, err := middleware.GenerateToken(uint(userIDFloat), username, role)
+		accessToken, _, err := middleware.GenerateToken(uint32(userIDFloat), username, role)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "生成新访问令牌失败"})
 			return

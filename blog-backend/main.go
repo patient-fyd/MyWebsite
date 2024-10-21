@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/middleware"
@@ -9,8 +11,10 @@ import (
 
 func main() {
 	r := gin.Default()
-	config.Setup()                 // 初始化配置
-	r.Use(middleware.CORSConfig()) //跨域
-	routers.SetupRoutes(r)         // 设置路由
-	r.Run(":8080")                 // 运行服务
+	config.Setup()
+	r.Use(middleware.CORSConfig())
+	routers.SetupRoutes(r)
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("服务器启动失败: %v", err)
+	}
 }

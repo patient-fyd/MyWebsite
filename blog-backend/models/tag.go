@@ -2,13 +2,14 @@ package models
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Tag struct {
-	ID        uint      `gorm:"primaryKey;autoIncrement"`
+	ID        uint32    `gorm:"primaryKey;autoIncrement"`
 	Name      string    `gorm:"type:varchar(50);uniqueIndex;not null" json:"name"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 }

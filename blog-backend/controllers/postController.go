@@ -1,15 +1,16 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/patient-fyd/blog-backend/config"
-	"github.com/patient-fyd/blog-backend/models"
-	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/patient-fyd/blog-backend/config"
+	"github.com/patient-fyd/blog-backend/models"
+	"gorm.io/gorm"
 )
 
 // 创建文章并关联标签
@@ -22,13 +23,13 @@ func CreatePost(c *gin.Context) {
 	}
 
 	// 将 userID 从 float64 转换为 uint
-	userIDUint := uint(userID.(float64))
+	userIDUint := uint32(userID.(float64))
 
 	// 定义输入结构体
 	var input struct {
 		Title      string   `json:"title" binding:"required"`
 		Content    string   `json:"content" binding:"required"`
-		CategoryID uint     `json:"category_id" binding:"required"`
+		CategoryID uint32   `json:"category_id" binding:"required"`
 		Tags       []string `json:"tags" binding:"required,min=1"` // 至少一个标签
 	}
 
@@ -57,7 +58,7 @@ func CreatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
 		return
 	}
-	
+
 	// 生成文章摘要，取前5行作为摘要
 	contentLines := strings.Split(input.Content, "\n")
 	summary := strings.Join(contentLines[:min(5, len(contentLines))], "\n") // 提取前5行
@@ -187,7 +188,7 @@ func UpdatePost(c *gin.Context) {
 	var input struct {
 		Title      string   `json:"title"`
 		Content    string   `json:"content"`
-		CategoryID uint     `json:"category_id"`
+		CategoryID uint32   `json:"category_id"`
 		Tags       []string `json:"tags"` // 标签的名称数组
 	}
 

@@ -1,10 +1,11 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/models"
-	"net/http"
 )
 
 // GetTags 获取标签列表

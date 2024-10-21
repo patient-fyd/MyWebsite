@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
 	"github.com/patient-fyd/blog-backend/models"
-	"net/http"
-	"time"
 )
 
 // RecordVisit 记录站点的访问量
