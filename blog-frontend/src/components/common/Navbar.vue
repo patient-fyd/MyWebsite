@@ -20,8 +20,24 @@
           <li class="nav-item">
             <router-link to="/guestbook" exact-active-class="active">留言小本</router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item"
+              @mouseenter="showDropdown"
+              @mouseleave="hideDropdown">
             <router-link to="/about" exact-active-class="active">关于更多</router-link>
+            <!-- 二级导航菜单 -->
+            <transition name="fade">
+              <ul v-if="isDropdownVisible" class="dropdown-menu">
+                <li class="dropdown-item">
+                  <router-link to="/about/team">登录</router-link>
+                </li>
+                <li class="dropdown-item">
+                  <router-link to="/about/contact">注册</router-link>
+                </li>
+                <li class="dropdown-item">
+                  <router-link to="/about/faq">联系</router-link>
+                </li>
+              </ul>
+            </transition>
           </li>
         </ul>
       </div>
@@ -29,7 +45,20 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue';
 
+// 控制二级导航是否可见
+const isDropdownVisible = ref(false);
+
+// 显示二级导航
+const showDropdown = () => {
+  isDropdownVisible.value = true;
+};
+
+// 隐藏二级导航
+const hideDropdown = () => {
+  isDropdownVisible.value = false;
+};
 </script>
 
 <style scoped>
@@ -72,22 +101,64 @@
   cursor: pointer;
 }
 
+/* 导航链接的样式 */
 .nav-item a {
   text-decoration: none;
   font-size: 18px;
   padding: 10px;
   color: #333;
   transition: color 0.3s ease, border-bottom 0.3s ease;
-  border-bottom: 2px solid #e0e0e0; /* 默认的底部线条颜色 */
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .nav-item a.active {
-  color: #8dc9e8; /* 选中时的颜色 */
-  border-bottom: 2px solid #8dc9e8; /* 选中时的底部线条颜色 */
+  color: #8dc9e8;
+  border-bottom: 2px solid #8dc9e8;
 }
 
 .nav-item a:hover {
   font-weight: bold;
   color: #8dc9e8;
+}
+
+/* 二级导航菜单样式 */
+.dropdown-menu {
+  list-style: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  padding: 10px;
+  margin: 0;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  margin-bottom: 10px;
+}
+
+.dropdown-item:last-child {
+  margin-bottom: 0;
+}
+
+.dropdown-item a {
+  text-decoration: none;
+  color: #333;
+  padding: 5px 10px;
+}
+
+.dropdown-item a:hover {
+  background-color: #f5f5f5;
+}
+
+/* 过渡效果 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>

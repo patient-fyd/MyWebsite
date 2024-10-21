@@ -63,6 +63,6 @@
 }
 
 .action-link:hover {
-  color: #3c74b3;
+  color: #47abef;
 }
 </style>
