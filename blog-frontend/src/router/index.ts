@@ -11,6 +11,16 @@ const routes: Array<RouteRecordRaw> = [
     name: "NotFound",
     component: () => import("@/views/NotFound.vue"), // 定义你的404页面组件
   },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/LoginPage.vue"),
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: () => import("@/views/Register.vue"),
+  },
 ];
 
 const router = createRouter({

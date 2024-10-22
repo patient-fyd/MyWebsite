@@ -1,30 +1,55 @@
 <template>
   <div id="app">
-    <div class="header">
+    <!-- 如果不是全屏页面，显示导航栏和目标视图 -->
+    <div v-if="!isFullScreenPage" class="header">
       <AppNavbar />
       <GoalView />
     </div>
-    <div class="container">
+
+    <!-- 主容器部分 -->
+    <div
+      :class="{
+        'fullscreen-layout': isFullScreenPage,
+        container: !isFullScreenPage,
+      }"
+    >
       <div class="content">
-        <div class="section">
+        <!-- 如果是全屏页面，不显示 section 和 sidebar -->
+        <div :class="{ section: !isFullScreenPage }">
           <router-view />
         </div>
-        <div class="sidebar">
+        <div v-if="!isFullScreenPage" class="sidebar">
           <Common />
         </div>
       </div>
     </div>
-    <div class="footer">
+
+    <!-- 如果不是全屏页面，显示页脚 -->
+    <div v-if="!isFullScreenPage" class="footer">
       <AppFooter />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import AppNavbar from "./components/common/Navbar.vue";
 import AppFooter from "./components/common/Footer.vue";
 import GoalView from "@/components/common/GoalView.vue";
 import Common from "@/views/Common.vue";
+
+// 使用 Vue Router 获取当前路由
+const route = useRoute();
+const isFullScreenPage = ref(false);
+
+watch(
+  () => route.path,
+  (newPath) => {
+    isFullScreenPage.value = newPath === "/login" || newPath === "/register";
+  },
+  { immediate: true }, // 确保初次加载时也能立即判断路由
+);
 </script>
 
 <style scoped>
@@ -71,5 +96,14 @@ body {
   width: 25%; /* 右边占 25% */
   padding: 10px;
   box-sizing: border-box;
+}
+
+.fullscreen-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 全屏高度 */
+  width: 100vw; /* 全屏宽度 */
+  background-color: #ffffff;
 }
 </style>

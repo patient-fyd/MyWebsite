@@ -38,13 +38,10 @@
           <transition name="fade">
             <ul v-if="isDropdownVisible" class="dropdown-menu">
               <li class="dropdown-item">
-                <router-link to="/about/team">登录</router-link>
+                <router-link to="/login">登录</router-link>
               </li>
               <li class="dropdown-item">
-                <router-link to="/about/contact">注册</router-link>
-              </li>
-              <li class="dropdown-item">
-                <router-link to="/about/faq">联系</router-link>
+                <router-link to="/register">注册</router-link>
               </li>
             </ul>
           </transition>
