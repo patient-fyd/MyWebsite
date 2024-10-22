@@ -1,51 +1,61 @@
 <template>
-    <div class="navbar">
-      <!-- 网站Logo -->
-      <div class="logo">
-        <img src="@/assets/logo-no-background.png" alt="网站Logo" />
-      </div>
-
-      <!-- 导航链接 -->
-      <div class="nav-container">
-        <ul class="nav-links">
-          <li class="nav-item">
-            <router-link to="/" exact-active-class="active">首页</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/recommended" exact-active-class="active">学习路线</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/plugin" exact-active-class="active">编程教程</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/guestbook" exact-active-class="active">留言小本</router-link>
-          </li>
-          <li class="nav-item"
-              @mouseenter="showDropdown"
-              @mouseleave="hideDropdown">
-            <router-link to="/about" exact-active-class="active">关于更多</router-link>
-            <!-- 二级导航菜单 -->
-            <transition name="fade">
-              <ul v-if="isDropdownVisible" class="dropdown-menu">
-                <li class="dropdown-item">
-                  <router-link to="/about/team">登录</router-link>
-                </li>
-                <li class="dropdown-item">
-                  <router-link to="/about/contact">注册</router-link>
-                </li>
-                <li class="dropdown-item">
-                  <router-link to="/about/faq">联系</router-link>
-                </li>
-              </ul>
-            </transition>
-          </li>
-        </ul>
-      </div>
+  <div class="navbar">
+    <!-- 网站Logo -->
+    <div class="logo">
+      <img src="@/assets/logo-no-background.png" alt="网站Logo" />
     </div>
+
+    <!-- 导航链接 -->
+    <div class="nav-container">
+      <ul class="nav-links">
+        <li class="nav-item">
+          <router-link to="/" exact-active-class="active">首页</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/recommended" exact-active-class="active"
+            >学习路线</router-link
+          >
+        </li>
+        <li class="nav-item">
+          <router-link to="/plugin" exact-active-class="active"
+            >编程教程</router-link
+          >
+        </li>
+        <li class="nav-item">
+          <router-link to="/guestbook" exact-active-class="active"
+            >留言小本</router-link
+          >
+        </li>
+        <li
+          class="nav-item"
+          @mouseenter="showDropdown"
+          @mouseleave="hideDropdown"
+        >
+          <router-link to="/about" exact-active-class="active"
+            >关于更多</router-link
+          >
+          <!-- 二级导航菜单 -->
+          <transition name="fade">
+            <ul v-if="isDropdownVisible" class="dropdown-menu">
+              <li class="dropdown-item">
+                <router-link to="/about/team">登录</router-link>
+              </li>
+              <li class="dropdown-item">
+                <router-link to="/about/contact">注册</router-link>
+              </li>
+              <li class="dropdown-item">
+                <router-link to="/about/faq">联系</router-link>
+              </li>
+            </ul>
+          </transition>
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 
 // 控制二级导航是否可见
 const isDropdownVisible = ref(false);
@@ -107,7 +117,9 @@ const hideDropdown = () => {
   font-size: 18px;
   padding: 10px;
   color: #333;
-  transition: color 0.3s ease, border-bottom 0.3s ease;
+  transition:
+    color 0.3s ease,
+    border-bottom 0.3s ease;
   border-bottom: 2px solid #e0e0e0;
 }
 
@@ -155,10 +167,12 @@ const hideDropdown = () => {
 }
 
 /* 过渡效果 */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

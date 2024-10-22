@@ -1,22 +1,28 @@
 <template>
   <div class="pagination-container">
     <!-- 显示当前页/总页数 -->
-    <div class="pagination-info">第 {{ currentPage }} / {{ totalPages }} 页</div>
+    <div class="pagination-info">
+      第 {{ currentPage }} / {{ totalPages }} 页
+    </div>
 
     <!-- 页码列表 -->
     <ul class="pagination">
       <!-- 首页 -->
-      <li @click="goToPage(1)" class="page-item" :class="{ disabled: currentPage === 1 }">
+      <li
+        @click="goToPage(1)"
+        class="page-item"
+        :class="{ disabled: currentPage === 1 }"
+      >
         «
       </li>
 
       <!-- 数字页码显示 -->
       <li
-          v-for="page in visiblePages"
-          :key="page"
-          @click="goToPage(page)"
-          class="page-item"
-          :class="{ active: currentPage === page }"
+        v-for="page in visiblePages"
+        :key="page"
+        @click="goToPage(page)"
+        class="page-item"
+        :class="{ active: currentPage === page }"
       >
         {{ page }}
       </li>
@@ -26,10 +32,18 @@
       <li v-if="showEllipsisAfter">...</li>
 
       <!-- 末页 -->
-      <li @click="goToPage(totalPages)" class="page-item" :class="{ disabled: currentPage === totalPages }">
+      <li
+        @click="goToPage(totalPages)"
+        class="page-item"
+        :class="{ disabled: currentPage === totalPages }"
+      >
         »
       </li>
-      <li @click="goToPage(totalPages)" class="page-item" :class="{ disabled: currentPage === totalPages }">
+      <li
+        @click="goToPage(totalPages)"
+        class="page-item"
+        :class="{ disabled: currentPage === totalPages }"
+      >
         末页
       </li>
     </ul>
@@ -37,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref } from "vue";
 
 // 页码相关数据
 const currentPage = ref(1);
@@ -68,7 +82,9 @@ const visiblePages = computed(() => {
 
 // 是否显示省略号
 const showEllipsisBefore = computed(() => visiblePages.value[0] > 1);
-const showEllipsisAfter = computed(() => visiblePages.value[visiblePages.value.length - 1] < totalPages.value);
+const showEllipsisAfter = computed(
+  () => visiblePages.value[visiblePages.value.length - 1] < totalPages.value,
+);
 
 // 跳转页面
 const goToPage = (page: number) => {

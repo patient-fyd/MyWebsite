@@ -8,13 +8,25 @@
     <!-- 分类列表 -->
     <div class="category-header">
       <ul class="category-list">
-        <li v-for="(category, index) in categories" :key="index" class="category-item">
-          <a href="#" class="category-link">{{ category.name }} ({{ category.count }})</a>
+        <li
+          v-for="(category, index) in categories"
+          :key="index"
+          class="category-item"
+        >
+          <a href="#" class="category-link"
+            >{{ category.name }} ({{ category.count }})</a
+          >
 
           <!-- 如果有子分类，显示子分类 -->
           <ul v-if="category.subcategories" class="subcategory-list">
-            <li v-for="(subcategory, subindex) in category.subcategories" :key="subindex" class="subcategory-item">
-              <a href="#" class="subcategory-link">{{ subcategory.name }} ({{ subcategory.count }})</a>
+            <li
+              v-for="(subcategory, subindex) in category.subcategories"
+              :key="subindex"
+              class="subcategory-item"
+            >
+              <a href="#" class="subcategory-link"
+                >{{ subcategory.name }} ({{ subcategory.count }})</a
+              >
             </li>
           </ul>
         </li>
@@ -26,30 +38,36 @@
 <script setup lang="ts">
 // 假设从服务端获取的分类数据
 const categories = [
-  { name: '业界新闻', count: 33 },
-  { name: '企业应用', count: 2 },
-  { name: '技术新闻', count: 38 },
-  { name: '技术管理', count: 19 },
-  { name: '技术译物', count: 125 },
-  { name: '操作系统', count: 97, subcategories: [
-      { name: 'Unix/Linux', count: 81 },
-      { name: 'Windows', count: 12 }
-    ]
+  { name: "业界新闻", count: 33 },
+  { name: "企业应用", count: 2 },
+  { name: "技术新闻", count: 38 },
+  { name: "技术管理", count: 19 },
+  { name: "技术译物", count: 125 },
+  {
+    name: "操作系统",
+    count: 97,
+    subcategories: [
+      { name: "Unix/Linux", count: 81 },
+      { name: "Windows", count: 12 },
+    ],
   },
-  { name: '数据库', count: 11 },
-  { name: '杂项资源', count: 295 },
-  { name: '流程方法', count: 48 },
-  { name: '程序设计', count: 110 },
-  { name: '系统架构', count: 15 },
-  { name: '编程工具', count: 67 },
-  { name: '编程语言', count: 326, subcategories: [
-      { name: '.NET编程', count: 3 },
-      { name: 'Ajax开发', count: 9 },
-      { name: 'C/C++语言', count: 74 },
-      { name: 'Erlang', count: 1 },
-      { name: 'Go 语言', count: 15 }
-    ]
-  }
+  { name: "数据库", count: 11 },
+  { name: "杂项资源", count: 295 },
+  { name: "流程方法", count: 48 },
+  { name: "程序设计", count: 110 },
+  { name: "系统架构", count: 15 },
+  { name: "编程工具", count: 67 },
+  {
+    name: "编程语言",
+    count: 326,
+    subcategories: [
+      { name: ".NET编程", count: 3 },
+      { name: "Ajax开发", count: 9 },
+      { name: "C/C++语言", count: 74 },
+      { name: "Erlang", count: 1 },
+      { name: "Go 语言", count: 15 },
+    ],
+  },
 ];
 </script>
 

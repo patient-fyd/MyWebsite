@@ -18,20 +18,18 @@
       <AppFooter />
     </div>
   </div>
-
 </template>
 
 <script lang="ts" setup>
-
-import AppNavbar from './components/common/Navbar.vue';
-import AppFooter from './components/common/Footer.vue';
+import AppNavbar from "./components/common/Navbar.vue";
+import AppFooter from "./components/common/Footer.vue";
 import GoalView from "@/components/common/GoalView.vue";
 import Common from "@/views/Common.vue";
 </script>
 
 <style scoped>
-
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;

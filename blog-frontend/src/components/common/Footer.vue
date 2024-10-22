@@ -8,9 +8,9 @@
       <p>
         备案号：
         <a
-            href="http://beian.miit.gov.cn/"
-            target="_blank"
-            rel="noopener noreferrer"
+          href="http://beian.miit.gov.cn/"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           赣ICP备2024046184号
         </a>

@@ -2,9 +2,7 @@
   <div class="not-found">
     <h1>404</h1>
     <p>抱歉，您访问的页面不存在。</p>
-    <router-link to="/" class="home-link">
-      返回主页
-    </router-link>
+    <router-link to="/" class="home-link"> 返回主页 </router-link>
   </div>
 </template>
 

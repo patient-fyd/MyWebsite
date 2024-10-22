@@ -29,7 +29,6 @@
   font-family: Arial, sans-serif;
   background-color: #ffffff;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-
 }
 
 /* 标题样式 */

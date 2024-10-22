@@ -26,7 +26,4 @@ import OtherActions from "@/components/common/OtherActions.vue";
   </div>
 </template>
 
-<style scoped>
-
-
-</style>
+<style scoped></style>
