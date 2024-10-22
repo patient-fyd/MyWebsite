@@ -1,20 +1,37 @@
 <template>
   <div class="article-list">
     <!-- 展示多个文章的列表 -->
-    <div v-for="(article, index) in articles" :key="index" class="article-item">
-      <!-- 顶部部分，可能是文章的头部信息，如标题、作者信息等 -->
+    <div
+      v-for="(article, index) in store.articles"
+      :key="index"
+      class="article-item"
+    >
+      <!-- 顶部部分，文章的头部信息，如标题、作者信息等 -->
       <div class="article-header">
         <h2>{{ article.title }}</h2>
-        <p>{{ article.author }}</p>
+        <ArticleMeta
+          :author="article.author"
+          :createdAt="article.created_at"
+          :commentsCount="article.comments ? article.comments.length : 0"
+          :views="article.views"
+        />
       </div>
 
       <!-- 文章内容展示 -->
       <div class="article-content">
-        <p>{{ article.summary }}</p>
+        <p>{{ article.summary || article.content }}</p>
+        <!-- 如果 summary 为空，则显示 content -->
       </div>
 
-      <!-- 底部的按钮，可能是阅读更多或分享按钮 -->
+      <!-- 底部的标签和阅读更多按钮 -->
       <div class="article-footer">
+        <p>
+          标签:
+          <span v-for="(tag, tagIndex) in article.tags" :key="tagIndex"
+            >{{ tag.name
+            }}{{ tagIndex < article.tags.length - 1 ? ", " : "" }}</span
+          >
+        </p>
         <button @click="readMore(article.id)">阅读更多</button>
       </div>
     </div>
@@ -22,23 +39,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useStore } from "@/store/index.ts";
+import { onMounted } from "vue";
+import ArticleMeta from "@/components/common/ArticleMeta.vue";
 
-// 假设从服务器获取的文章数据
-const articles = ref([
-  { id: 1, title: '文章标题1', author: '作者1', summary: '文章摘要1...' },
-  { id: 2, title: '文章标题2', author: '作者2', summary: '文章摘要2...' },
-  { id: 3, title: '文章标题3', author: '作者3', summary: '文章摘要3...' },
-  { id: 4, title: '文章标题4', author: '作者4', summary: '文章摘要4...'},
-  { id: 5, title: '文章标题5', author: '作者5', summary: '文章摘要5...'},
-  { id: 6, title: '文章标题6', author: '作者6', summary: '文章摘要6...'},
-  // 继续添加更多文章
-]);
+const store = useStore();
+
+// 在组件挂载时调用 fetchArticles 方法
+onMounted(() => {
+  store.fetchArticles(); // 调用 store 中的方法获取文章列表
+});
 
 // 阅读更多的功能，可以自定义跳转或展示逻辑
 const readMore = (id: number) => {
-  console.log('阅读更多文章，ID:', id);
-  // 这里可以实现跳转到文章详情页的逻辑
+  console.log("阅读更多文章，ID:", id);
+  // TODO 实现跳转到文章详情页的逻辑
 };
 </script>
 
@@ -54,7 +69,7 @@ const readMore = (id: number) => {
 .article-item {
   padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .article-header {
@@ -64,8 +79,10 @@ const readMore = (id: number) => {
 }
 
 .article-header h2 {
+  display: flex;
+  justify-content: center;
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .article-header p {
@@ -94,6 +111,6 @@ const readMore = (id: number) => {
 }
 
 .article-footer button:hover {
-  background-color: #47abef;
+  background-color: #8dc9e8;
 }
 </style>
