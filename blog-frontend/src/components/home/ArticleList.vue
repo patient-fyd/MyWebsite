@@ -40,10 +40,12 @@
 
 <script setup lang="ts">
 import { useArticleStore } from "@/stores";
+import { useRouter } from "vue-router";
 import { onMounted } from "vue";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
 
 const store = useArticleStore();
+const router = useRouter();
 const { fetchArticles } = store;
 
 // 在组件挂载时调用 fetchArticles 方法
@@ -53,8 +55,7 @@ onMounted(() => {
 
 // 阅读更多的功能，可以自定义跳转或展示逻辑
 const readMore = (id: number) => {
-  console.log("阅读更多文章，ID:", id);
-  // TODO 实现跳转到文章详情页的逻辑
+  router.push({ name: "PostDetail", params: { id } });
 };
 </script>
 

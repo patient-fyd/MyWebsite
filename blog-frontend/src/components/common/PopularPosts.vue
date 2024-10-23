@@ -29,23 +29,27 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from "vue";
-import { usePostStore } from "@/stores";
+import { onMounted, onUnmounted } from "vue";
+import { useArticleStore } from "@/stores";
 
-const postStore = usePostStore();
+const postStore = useArticleStore();
 const { fetchPopularPosts, popularPosts, loading, error } = postStore;
+let intervalId: number | undefined = undefined;
 
-// 确保在组件挂载时发起请求
 onMounted(() => {
-  if (popularPosts.length === 0) {
-    console.log("Calling fetchPopularPosts"); // 调试日志
-    fetchPopularPosts();
-  }
+  fetchPopularPosts();
+
+  // 每隔 5 分钟刷新一次热门文章列表
+  intervalId = setInterval(() => {
+    postStore.fetchPopularPosts();
+  }, 300000); // 5 分钟
 });
 
-// 监听状态变化，以便在状态更新时重新渲染
-watch(popularPosts, () => {
-  console.log("Popular posts updated:", newPosts); // 检查数据变化
+// 清理定时器
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
 });
 
 // 绑定 store 中的数据
