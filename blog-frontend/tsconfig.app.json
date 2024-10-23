@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node","md-editor-v3"],
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",

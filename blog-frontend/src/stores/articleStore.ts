@@ -93,6 +93,35 @@ export const useArticleStore = defineStore("articleStore", {
         this.loading = false;
       }
     },
+    // 发布文章
+    async createArticle(
+      title: string,
+      content: string,
+      categoryID: number,
+      tags: string[],
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await axios.post("/api/posts", {
+          title,
+          content,
+          category_id: categoryID,
+          tags,
+        });
+
+        if (response.status === 200) {
+          this.article = response.data; // 将发布成功的文章存入 state
+          alert("文章发布成功");
+        }
+      } catch (error: any) {
+        this.error = error.response?.data?.error || "发布文章失败";
+        alert(this.error);
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 
   // 开启持久化，保存状态

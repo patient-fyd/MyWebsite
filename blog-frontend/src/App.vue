@@ -50,7 +50,8 @@ watch(
       newPath === "/:pathMatch(.*)*" ||
       newPath === "/login" ||
       newPath === "/register" ||
-      newPath === "/change-password";
+      newPath === "/change-password" ||
+      newPath === "/posts";
   },
   { immediate: true }, // 确保初次加载时也能立即判断路由
 );

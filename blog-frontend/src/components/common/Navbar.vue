@@ -48,7 +48,7 @@
             <ul v-if="isDropdownVisible" class="dropdown-menu">
               <!-- 当用户已登录时，显示这些选项 -->
               <li v-if="isAuthenticated" class="dropdown-item">
-                <router-link to="/create-article">创建文章</router-link>
+                <router-link to="/posts">创建文章</router-link>
               </li>
               <li v-if="isAuthenticated" class="dropdown-item">
                 <router-link to="/change-password">修改密码</router-link>
@@ -73,10 +73,9 @@
     </div>
   </div>
 </template>
-
 <script lang="ts" setup>
-import { ref, computed, nextTick } from "vue";
-import { useUserStore } from "@/stores/userStore"; // 引入用户 store
+import { ref, computed } from "vue";
+import { useUserStore } from "@/stores"; // 引入用户 store
 import { useRouter } from "vue-router"; // 引入路由
 
 // 获取用户 store 和登录状态
@@ -99,13 +98,9 @@ const hideDropdown = () => {
 };
 
 // 处理退出登录
-const logout = async () => {
+const logout = () => {
   userStore.logout();
-
-  // 等待下一次 DOM 更新后再重定向
-  await nextTick();
-
-  // 重定向到主页
+  // 直接重定向到主页，不需要等待 DOM 更新
   router.push("/");
 };
 </script>
