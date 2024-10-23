@@ -12,7 +12,7 @@
           <router-link to="/" exact-active-class="active">首页</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/recommended" exact-active-class="active"
+          <router-link to="/learningRoute" exact-active-class="active"
             >学习路线</router-link
           >
         </li>

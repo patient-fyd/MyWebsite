@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { useStore } from "@/store/index.ts";
+import { useStore } from "@/stores/index.ts";
 import { onMounted } from "vue";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
 
@@ -47,7 +47,7 @@ const store = useStore();
 
 // 在组件挂载时调用 fetchArticles 方法
 onMounted(() => {
-  store.fetchArticles(); // 调用 store 中的方法获取文章列表
+  store.fetchArticles(); // 调用 stores 中的方法获取文章列表
 });
 
 // 阅读更多的功能，可以自定义跳转或展示逻辑

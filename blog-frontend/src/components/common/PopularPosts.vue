@@ -3,34 +3,46 @@
     <div class="title">
       <h3>全站热门</h3>
     </div>
-    <div class="hot-posts">
-      <!-- 热门文章列表 -->
-      <ul class="post-list">
-        <li v-for="(post, index) in posts" :key="index" class="post-item">
-          <a href="#" class="post-link">{{ post }}</a>
-        </li>
-      </ul>
+
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading">加载中...</div>
+
+    <!-- 错误状态 -->
+    <div v-if="error" class="error">{{ error }}</div>
+
+    <!-- 热门文章列表 -->
+    <ul v-if="!loading && !error && posts && posts.length" class="post-list">
+      <li v-for="(post, index) in posts" :key="post.id" class="post-item">
+        <a :href="`/posts/${post.id}`" class="post-link">
+          {{ post.title }}
+        </a>
+        <div class="post-meta">
+          作者: {{ post.author.Username }} | 浏览: {{ post.views }} 次 | 类别:
+          {{ post.category.name }}
+        </div>
+      </li>
+    </ul>
+
+    <!-- 如果没有文章 -->
+    <div v-if="!loading && !error && posts.length === 0" class="no-posts">
+      暂无热门文章
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 假设从服务端获取的热门文章数据
-const posts = [
-  "程序员技术练级攻略",
-  "“火柴根式”程序员面试题",
-  "简明 Vim 练级攻略",
-  "“作坏保的程序员，从不用百度开始”",
-  "TCP 的那些事儿（上）",
-  "做个环保主义的程序员",
-  "编程能力与编程年龄",
-  "AWK 简明教程",
-  "二维码的生成细节和原理",
-  "sed 简明教程",
-  "如何学好C语言",
-  "如何超越大多数人",
-  "疫苗：Java HashMap的死循环",
-];
+import { onMounted } from "vue";
+import { usePostStore } from "@/stores/postStore";
+
+const postStore = usePostStore();
+const { fetchPopularPosts, popularPosts, loading, error } = postStore;
+
+onMounted(() => {
+  fetchPopularPosts(); // 获取热门文章
+});
+
+// 绑定 store 中的数据
+const posts = popularPosts;
 </script>
 
 <style scoped>
