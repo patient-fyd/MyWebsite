@@ -8,10 +8,10 @@
     <!-- 操作列表 -->
     <ul class="action-list">
       <li class="action-item">
-        <a href="#" class="action-link">注册</a>
+        <router-link to="/register" class="action-link">注册</router-link>
       </li>
       <li class="action-item">
-        <a href="#" class="action-link">登录</a>
+        <router-link to="/login" class="action-link">登录</router-link>
       </li>
     </ul>
   </div>
