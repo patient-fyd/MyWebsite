@@ -20,15 +20,6 @@
           placeholder="Enter your password"
         />
       </div>
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input
-          v-model="form.email"
-          type="email"
-          id="email"
-          placeholder="Enter your email"
-        />
-      </div>
       <button type="submit">Login</button>
     </form>
 
@@ -42,7 +33,9 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore"; // 引入用户 store
 
+const userStore = useUserStore(); // 使用 userStore
 const router = useRouter();
 
 const form = reactive({
@@ -51,15 +44,26 @@ const form = reactive({
   email: "",
 });
 
-const onSubmit = () => {
-  if (!form.username || !form.password || !form.email) {
+// 提交登录表单
+const onSubmit = async () => {
+  if (!form.username || !form.password) {
     alert("Please fill in all fields.");
     return;
   }
-  alert(`Logging in with Username: ${form.username}, Email: ${form.email}`);
 
-  // 模拟登录成功后跳转到主页
-  router.push("/");
+  try {
+    // 调用 store 中的 login 方法
+    await userStore.login(form.username, form.password);
+
+    if (!userStore.error) {
+      alert("Login successful!");
+      router.push("/"); // 登录成功后跳转到主页
+    } else {
+      alert(userStore.error); // 显示登录失败原因
+    }
+  } catch (error) {
+    console.error("Error during login:", error);
+  }
 };
 </script>
 
@@ -92,7 +96,7 @@ input {
 button {
   width: 100%;
   padding: 10px;
-  background-color: #42b983;
+  background-color: #8dc9e8;
   color: white;
   border: none;
   border-radius: 4px;
@@ -100,7 +104,7 @@ button {
 }
 
 button:hover {
-  background-color: #369970;
+  background-color: #47abef;
 }
 
 .register-link {
@@ -108,7 +112,7 @@ button:hover {
 }
 
 .register-link a {
-  color: #42b983;
+  color: #8dc9e8;
   text-decoration: none;
 }
 

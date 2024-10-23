@@ -96,7 +96,7 @@ input {
 button {
   width: 100%;
   padding: 10px;
-  background-color: #42b983;
+  background-color: #8dc9e8;
   color: white;
   border: none;
   border-radius: 4px;
@@ -104,6 +104,6 @@ button {
 }
 
 button:hover {
-  background-color: #369970;
+  background-color: #47abef;
 }
 </style>
