@@ -75,13 +75,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { useUserStore } from "@/stores/userStore"; // 引入用户 store
 import { useRouter } from "vue-router"; // 引入路由
 
 // 获取用户 store 和登录状态
 const userStore = useUserStore();
-const isAuthenticated = userStore.isAuthenticated;
+
+// 使用 computed 来确保 isAuthenticated 是响应式的
+const isAuthenticated = computed(() => userStore.isAuthenticated);
+
 const router = useRouter();
 
 // 控制二级导航的显示

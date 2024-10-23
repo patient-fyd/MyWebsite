@@ -89,6 +89,7 @@ export const useUserStore = defineStore("userStore", {
       this.isAuthenticated = false;
       localStorage.removeItem("token"); // 清除 access_token
       localStorage.removeItem("refresh_token"); // 清除 refresh_token
+      alert("已退出登录");
     },
 
     // 自动登录
