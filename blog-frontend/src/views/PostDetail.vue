@@ -52,14 +52,8 @@ watch(
 </script>
 
 <style scoped>
-.article-item {
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
 .article-header {
+  margin-top: 20px;
   margin-bottom: 15px;
   border-bottom: 1px solid #ddd;
   padding-bottom: 10px;
