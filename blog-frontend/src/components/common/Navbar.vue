@@ -39,7 +39,7 @@
             exact-active-class="active"
             >个人中心</router-link
           >
-          <router-link v-else to="/about" exact-active-class="active"
+          <router-link v-else to="/aboutme" exact-active-class="active"
             >关于更多</router-link
           >
 
@@ -96,9 +96,14 @@ const hideDropdown = () => {
 };
 
 // 处理退出登录
-const logout = () => {
+const logout = async () => {
   userStore.logout();
-  router.push("/"); // 退出后重定向到主页
+
+  // 等待下一次 DOM 更新后再重定向
+  await nextTick();
+
+  // 重定向到主页
+  router.push("/");
 };
 </script>
 <style scoped>

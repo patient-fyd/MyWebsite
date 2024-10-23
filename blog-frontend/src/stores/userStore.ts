@@ -14,6 +14,7 @@ interface UserState {
   isAuthenticated: boolean; // 用户是否登录
   loading: boolean; // 加载状态
   error: string | null; // 错误信息
+  successMessage: string | null; // 成功信息
 }
 
 export const useUserStore = defineStore("userStore", {
@@ -22,6 +23,7 @@ export const useUserStore = defineStore("userStore", {
     isAuthenticated: false,
     loading: false,
     error: null,
+    successMessage: null,
   }),
 
   actions: {
@@ -65,7 +67,14 @@ export const useUserStore = defineStore("userStore", {
         if (response.status === 200) {
           this.user = response.data.user;
           this.isAuthenticated = true;
-          localStorage.setItem("token", response.data.token); // 保存 token
+
+          // 保存 access_token 到 localStorage
+          const accessToken = response.data.access_token;
+          localStorage.setItem("token", accessToken); // 保存 token
+
+          // 保存 refresh_token
+          const refreshToken = response.data.refresh_token;
+          localStorage.setItem("refresh_token", refreshToken);
         }
       } catch (error: any) {
         this.error = error.response?.data?.error || "登录失败";
@@ -78,7 +87,8 @@ export const useUserStore = defineStore("userStore", {
     logout() {
       this.user = null;
       this.isAuthenticated = false;
-      localStorage.removeItem("token"); // 清除 token
+      localStorage.removeItem("token"); // 清除 access_token
+      localStorage.removeItem("refresh_token"); // 清除 refresh_token
     },
 
     // 自动登录
@@ -96,10 +106,47 @@ export const useUserStore = defineStore("userStore", {
             this.user = response.data.user;
             this.isAuthenticated = true;
           }
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error: any) {
           this.logout(); // 如果 token 无效，登出
         }
+      }
+    },
+
+    // 修改密码
+    async changePassword(oldPassword: string, newPassword: string) {
+      this.loading = true;
+      this.error = null;
+      this.successMessage = null;
+
+      try {
+        // 从 localStorage 获取 token
+        const token = localStorage.getItem("token");
+        if (!token) {
+          this.error = "未提供认证令牌，请重新登录";
+          return;
+        }
+
+        // 发起请求，带上 Authorization 头部
+        const response = await axios.post(
+          "/api/change-password",
+          {
+            old_password: oldPassword,
+            new_password: newPassword,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // 设置 Authorization 头部
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          this.successMessage = "密码修改成功";
+        }
+      } catch (err: any) {
+        this.error = err.response?.data?.error || "修改密码失败";
+      } finally {
+        this.loading = false;
       }
     },
   },

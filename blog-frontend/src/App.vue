@@ -46,7 +46,11 @@ const isFullScreenPage = ref(false);
 watch(
   () => route.path,
   (newPath) => {
-    isFullScreenPage.value = newPath === "/login" || newPath === "/register";
+    isFullScreenPage.value =
+      newPath === "/:pathMatch(.*)*" ||
+      newPath === "/login" ||
+      newPath === "/register" ||
+      newPath === "/change-password";
   },
   { immediate: true }, // 确保初次加载时也能立即判断路由
 );
