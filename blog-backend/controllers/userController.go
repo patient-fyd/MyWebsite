@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -14,10 +15,15 @@ import (
 // 注册
 func Register(c *gin.Context) {
 	var user models.User
+
+	// 绑定 JSON 数据到 user 结构体
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 打印接收到的用户数据用于调试
+	c.JSON(http.StatusOK, gin.H{"message": "接收到的用户数据", "user": user})
 
 	// 验证用户名和密码不为空
 	if user.Username == "" || user.Password == "" {
@@ -33,11 +39,26 @@ func Register(c *gin.Context) {
 	}
 	user.Password = string(hashedPassword)
 
+	// 将用户信息保存到数据库
 	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// 检查是否是唯一性错误（例如用户名重复）
+		if strings.Contains(err.Error(), "duplicate key value") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "用户名已存在"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "注册成功"})
+
+	// 注册成功，返回成功消息和用户信息（不包括密码）
+	c.JSON(http.StatusOK, gin.H{
+		"message": "注册成功",
+		"user": gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+		},
+	})
 }
 
 // Login 用户登录并生成 JWT

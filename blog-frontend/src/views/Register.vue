@@ -37,7 +37,9 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores"; // 引入用户 store
 
+const userStore = useUserStore(); // 使用 userStore
 const router = useRouter();
 
 const form = reactive({
@@ -46,15 +48,22 @@ const form = reactive({
   email: "",
 });
 
-const onSubmit = () => {
+// 提交注册表单
+const onSubmit = async () => {
+  console.log("提交注册表单", form);
   if (!form.username || !form.password || !form.email) {
     alert("Please fill in all fields.");
     return;
   }
-  alert(`Registering with Username: ${form.username}, Email: ${form.email}`);
 
-  // 模拟注册成功后跳转到登录页面
-  router.push("/login");
+  await userStore.register(form.username, form.password, form.email);
+
+  if (!userStore.error) {
+    alert("Registration successful!");
+    router.push("/login");
+  } else {
+    console.error("注册错误:", userStore.error);
+  }
 };
 </script>
 
