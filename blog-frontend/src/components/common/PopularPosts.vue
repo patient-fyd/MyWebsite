@@ -16,10 +16,8 @@
         <a :href="`/posts/${post.id}`" class="post-link">
           {{ post.title }}
         </a>
-        <div class="post-meta">
-          作者: {{ post.author.Username }} | 浏览: {{ post.views }} 次 | 类别:
-          {{ post.category.name }}
-        </div>
+        <i class="fas fa-eye"></i>
+        <span>{{ post.views }}</span>
       </li>
     </ul>
 
@@ -31,14 +29,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { usePostStore } from "@/stores/postStore";
+import { onMounted, watch } from "vue";
+import { usePostStore } from "@/stores";
 
 const postStore = usePostStore();
 const { fetchPopularPosts, popularPosts, loading, error } = postStore;
 
+// 确保在组件挂载时发起请求
 onMounted(() => {
-  fetchPopularPosts(); // 获取热门文章
+  if (popularPosts.length === 0) {
+    console.log("Calling fetchPopularPosts"); // 调试日志
+    fetchPopularPosts();
+  }
+});
+
+// 监听状态变化，以便在状态更新时重新渲染
+watch(popularPosts, () => {
+  console.log("Popular posts updated:", newPosts); // 检查数据变化
 });
 
 // 绑定 store 中的数据

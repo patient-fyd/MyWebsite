@@ -58,9 +58,4 @@ const formatDate = (date: string) => {
   align-items: center;
   margin-right: 10px;
 }
-
-i {
-  margin-right: 5px;
-  color: #8dc9e8;
-}
 </style>

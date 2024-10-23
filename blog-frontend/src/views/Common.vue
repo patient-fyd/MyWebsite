@@ -4,6 +4,8 @@ import PopularPosts from "@/components/common/PopularPosts.vue";
 import CategoryFilter from "@/components/common/CategoryFilter.vue";
 import TagFilter from "@/components/common/TagFilter.vue";
 import OtherActions from "@/components/common/OtherActions.vue";
+// 确保组件加载
+console.log("Common.vue loaded");
 </script>
 
 <template>

@@ -31,7 +31,7 @@ export const usePostStore = defineStore("postStore", {
     error: null,
   }),
 
-  actions: {
+  /*  actions: {
     async fetchPopularPosts() {
       this.loading = true;
       this.error = null;
@@ -52,11 +52,34 @@ export const usePostStore = defineStore("postStore", {
             Username: post.author.Username, // 只提取作者用户名
           },
         }));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         this.error = "无法获取热门文章";
       } finally {
         this.loading = false;
       }
     },
+  },*/
+  actions: {
+    async fetchPopularPosts() {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        console.log("Fetching popular posts..."); // 调试日志
+        const response = await axios.get("/api/popular-posts");
+        this.popularPosts = response.data;
+        console.log("Fetched posts:", this.popularPosts); // 输出获取的数据
+      } catch (error) {
+        this.error = "无法获取热门文章";
+        console.error("Error fetching popular posts:", error); // 错误日志
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+  // 开启持久化
+  persist: {
+    enabled: true,
   },
 });
