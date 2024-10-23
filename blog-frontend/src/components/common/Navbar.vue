@@ -26,21 +26,44 @@
             >留言小本</router-link
           >
         </li>
+
+        <!-- 动态渲染的 "个人中心" 或 "关于更多" -->
         <li
           class="nav-item"
           @mouseenter="showDropdown"
           @mouseleave="hideDropdown"
         >
-          <router-link to="/about" exact-active-class="active"
+          <router-link
+            v-if="isAuthenticated"
+            to="/profile"
+            exact-active-class="active"
+            >个人中心</router-link
+          >
+          <router-link v-else to="/about" exact-active-class="active"
             >关于更多</router-link
           >
+
           <!-- 二级导航菜单 -->
           <transition name="fade">
             <ul v-if="isDropdownVisible" class="dropdown-menu">
-              <li class="dropdown-item">
+              <!-- 当用户已登录时，显示这些选项 -->
+              <li v-if="isAuthenticated" class="dropdown-item">
+                <router-link to="/create-article">创建文章</router-link>
+              </li>
+              <li v-if="isAuthenticated" class="dropdown-item">
+                <router-link to="/change-password">修改密码</router-link>
+              </li>
+              <li v-if="isAuthenticated" class="dropdown-item">
+                <a href="javascript:void(0)" @click.prevent="logout"
+                  >退出登录</a
+                >
+              </li>
+
+              <!-- 当用户未登录时，显示登录和注册选项 -->
+              <li v-if="!isAuthenticated" class="dropdown-item">
                 <router-link to="/login">登录</router-link>
               </li>
-              <li class="dropdown-item">
+              <li v-if="!isAuthenticated" class="dropdown-item">
                 <router-link to="/register">注册</router-link>
               </li>
             </ul>
@@ -53,21 +76,31 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { useUserStore } from "@/stores/userStore"; // 引入用户 store
+import { useRouter } from "vue-router"; // 引入路由
 
-// 控制二级导航是否可见
+// 获取用户 store 和登录状态
+const userStore = useUserStore();
+const isAuthenticated = userStore.isAuthenticated;
+const router = useRouter();
+
+// 控制二级导航的显示
 const isDropdownVisible = ref(false);
 
-// 显示二级导航
+// 显示和隐藏二级导航菜单
 const showDropdown = () => {
   isDropdownVisible.value = true;
 };
-
-// 隐藏二级导航
 const hideDropdown = () => {
   isDropdownVisible.value = false;
 };
-</script>
 
+// 处理退出登录
+const logout = () => {
+  userStore.logout();
+  router.push("/"); // 退出后重定向到主页
+};
+</script>
 <style scoped>
 /* 常规的导航栏样式 */
 .navbar {
