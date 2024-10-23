@@ -126,7 +126,10 @@ func GetPosts(c *gin.Context) {
 	tagID := c.Query("tag_id")
 	searchQuery := c.Query("search")
 
-	query := db.Preload("Author").Preload("Category").Preload("Tags").Offset(offset).Limit(pageSize)
+	// 构建查询
+	query := db.Preload("Author").Preload("Category").Preload("Tags").
+		Offset(offset).Limit(pageSize).
+		Order("created_at desc") // 按创建时间倒序排序
 
 	// 应用过滤条件
 	if categoryID != "" {
