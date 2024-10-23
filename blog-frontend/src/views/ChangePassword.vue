@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores"; // 使用 userStore
 
@@ -51,6 +51,12 @@ const router = useRouter();
 const form = reactive({
   oldPassword: "",
   newPassword: "",
+});
+
+// 在组件挂载时重置成功和错误信息
+onMounted(() => {
+  userStore.successMessage = null;
+  userStore.error = null;
 });
 
 // 提交表单
