@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { useArticleStore } from "@/stores";
+import { useArticleStore } from "@/stores/articleStore";
 
 const postStore = useArticleStore();
 const { fetchPopularPosts, popularPosts, loading, error } = postStore;

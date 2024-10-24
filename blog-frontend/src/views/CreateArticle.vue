@@ -6,7 +6,6 @@
         <input
           class="title-input"
           type="text"
-          id="title"
           v-model="title"
           placeholder="请输入文章标题"
         />
@@ -16,7 +15,7 @@
       <div class="button-group">
         <!-- 发布按钮 -->
         <button @click="showPublishModal = true">发布</button>
-        <!-- 切换富文本按钮 -->
+        <!-- 切换编辑器按钮 -->
         <button @click="promptToggleEditor" class="toggle-button">
           <i class="fas fa-exchange-alt"></i>
         </button>
@@ -26,6 +25,7 @@
 
     <!-- 提示切换编辑器的模态框 -->
     <Modal
+      v-if="togglePrompt"
       v-model:isVisible="togglePrompt"
       title="确认切换编辑器"
       content="之前的内容将不会保存，是否确认切换？"
@@ -49,13 +49,15 @@
         class="custom-editor"
         v-model="markdownContent"
         :editorOptions="editorOptions"
-        :onChange="debouncedSave"
+        @onChange="debouncedSave"
       />
     </div>
 
     <!-- 发布文章的模态框 -->
     <SelectModal
-      v-if="showPublishModal"
+      v-model:isVisible="showPublishModal"
+      :categories="categories"
+      :tags="availableTags"
       @confirm="handleModalConfirm"
       @cancel="handleModalCancel"
     />
@@ -71,30 +73,37 @@ import "highlight.js/styles/github.css";
 import SelectModal from "@/components/createArticle/SelectModal.vue";
 import Modal from "@/components/createArticle/Modal.vue";
 import { useArticleStore } from "@/stores/articleStore";
+import { useCategoryTagStore } from "@/stores/categoryTagStore";
 import { QuillEditor } from "@vueup/vue-quill";
 
 const title = ref("");
 const markdownContent = ref("### 在这里开始你的 Markdown 编辑");
-const content = ref(""); // Quill 编辑器的内容
-const isUsingQuill = ref(false); // 初始设置为使用MdEditor
+const content = ref(""); // Content for Quill editor
+const isUsingQuill = ref(false); // Default to using MdEditor
 const showPublishModal = ref(false);
-const togglePrompt = ref(false); // 控制是否显示切换编辑器的提示
+const togglePrompt = ref(false); // Controls the editor switch prompt
 const savingStatus = ref("");
-const categoryID = ref(1); // 假设初始类别 ID 为 1
-const tags = ref<string[]>([]); // 标签
-const summary = ref(""); // 文章摘要
-
 const articleStore = useArticleStore();
 
-// 从 localStorage 获取编辑器的状态和草稿内容
+const categoryTagStore = useCategoryTagStore();
+const categories = categoryTagStore.categories;
+const availableTags = categoryTagStore.tags;
+
+// Fetch categories and tags when component mounts
+onMounted(async () => {
+  await categoryTagStore.fetchCategories();
+  await categoryTagStore.fetchTags();
+
+  categories.values = categoryTagStore.categories;
+  availableTags.values = categoryTagStore.tags;
+});
+
+// Retrieve saved editor state and content from localStorage
 onMounted(() => {
   const savedEditorType = localStorage.getItem("isUsingQuill");
   const savedTitle = localStorage.getItem("articleTitle");
   const savedMarkdownContent = localStorage.getItem("markdownContent");
   const savedQuillContent = localStorage.getItem("quillContent");
-  const savedCategoryID = localStorage.getItem("categoryID");
-  const savedTags = localStorage.getItem("tags");
-  const savedSummary = localStorage.getItem("summary");
 
   if (savedEditorType !== null) {
     isUsingQuill.value = savedEditorType === "true";
@@ -103,12 +112,9 @@ onMounted(() => {
   if (savedTitle) title.value = savedTitle;
   if (savedMarkdownContent) markdownContent.value = savedMarkdownContent;
   if (savedQuillContent) content.value = savedQuillContent;
-  if (savedCategoryID) categoryID.value = Number(savedCategoryID);
-  if (savedTags) tags.value = JSON.parse(savedTags);
-  if (savedSummary) summary.value = savedSummary;
 });
 
-// Quill 编辑器选项
+// Quill editor options
 const editorOptions = ref({
   theme: "snow",
   modules: {
@@ -120,7 +126,7 @@ const editorOptions = ref({
   },
 });
 
-// 自动保存到 localStorage 的函数
+// Auto-save content to localStorage
 savingStatus.value = "文章将自动保存！";
 const saveContentToLocal = async () => {
   savingStatus.value = "保存中...";
@@ -129,9 +135,6 @@ const saveContentToLocal = async () => {
     localStorage.setItem("articleTitle", title.value);
     localStorage.setItem("markdownContent", markdownContent.value);
     localStorage.setItem("quillContent", content.value);
-    localStorage.setItem("categoryID", categoryID.value.toString());
-    localStorage.setItem("tags", JSON.stringify(tags.value));
-    localStorage.setItem("summary", summary.value);
     savingStatus.value = "保存成功！";
     setTimeout(() => (savingStatus.value = "文章将自动保存！"), 3000);
   } catch (error) {
@@ -140,28 +143,28 @@ const saveContentToLocal = async () => {
   }
 };
 
-// 防抖函数，防止频繁保存
+// Debounced save to prevent excessive saves
 const debouncedSave = debounce(saveContentToLocal, 1000);
 
-// 监听内容的变化并自动保存到 localStorage
-watch([title, markdownContent, content, categoryID, tags, summary], () => {
+// Watch for changes and auto-save
+watch([title, markdownContent, content], () => {
   debouncedSave();
 });
 
-// 提示切换编辑器前确认
+// Handle editor switch prompt
 const promptToggleEditor = () => {
-  togglePrompt.value = true; // 显示提示框
+  togglePrompt.value = true; // Show prompt modal
 };
 
-// 确认切换编辑器
+// Confirm editor switch
 const confirmToggleEditor = () => {
   isUsingQuill.value = !isUsingQuill.value;
-  // 保存编辑器状态到 localStorage
+  // Save editor state to localStorage
   localStorage.setItem("isUsingQuill", String(isUsingQuill.value));
-  togglePrompt.value = false; // 关闭提示框
+  togglePrompt.value = false; // Close prompt modal
 };
 
-// Quill 编辑器事件处理
+// Quill editor event handlers
 const onEditorBlur = (event) => {
   console.log("Editor blurred!", event);
 };
@@ -172,6 +175,57 @@ const onEditorFocus = (event) => {
 
 const onEditorReady = (event) => {
   console.log("Editor is ready!", event);
+};
+
+// Handle confirm event from SelectModal
+const handleModalConfirm = ({ categoryID, tags, summary }) => {
+  publishArticle(categoryID, tags, summary);
+};
+
+// Handle cancel event from SelectModal
+const handleModalCancel = () => {
+  showPublishModal.value = false;
+};
+
+// Publish article function
+const publishArticle = async (categoryID, tags, summary) => {
+  try {
+    await articleStore.createArticle(
+      title.value,
+      isUsingQuill.value ? content.value : markdownContent.value,
+      summary,
+      categoryID,
+      tags,
+    );
+    // 检查是否有错误
+    if (articleStore.error) {
+      // 显示错误信息
+      alert(`发布文章失败：${articleStore.error}`);
+    } else {
+      // 成功发布文章后执行重定向
+      router.push("/"); // 重定向到主页
+
+      // 重置表单和状态
+      title.value = "";
+      markdownContent.value = "### 在这里开始你的 Markdown 编辑";
+      content.value = "";
+      categoryID.value = 1; // 重置类别ID
+      tags.value = [];
+      summary.value = "";
+      showPublishModal.value = false;
+
+      // 清空 localStorage 中的草稿内容
+      localStorage.removeItem("articleTitle");
+      localStorage.removeItem("markdownContent");
+      localStorage.removeItem("quillContent");
+      localStorage.removeItem("categoryID");
+      localStorage.removeItem("tags");
+      localStorage.removeItem("summary");
+    }
+  } catch (error) {
+    console.error("发布文章失败", error);
+    alert("发布文章失败，请重试。");
+  }
 };
 </script>
 

@@ -22,13 +22,20 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// 将 userID 从 float64 转换为 uint
-	userIDUint := uint32(userID.(float64))
+	// 检查 userID 的实际类型并转换为 uint32
+	userIDUint, ok := userID.(uint)
+	if !ok {
+		log.Println("userID 类型断言失败，userID 不是 uint 类型")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "用户ID类型错误"})
+		return
+	}
+	userIDUint32 := uint32(userIDUint)
 
 	// 定义输入结构体
 	var input struct {
 		Title      string   `json:"title" binding:"required"`
 		Content    string   `json:"content" binding:"required"`
+		Summary    string   `json:"summary"`
 		CategoryID uint32   `json:"category_id" binding:"required"`
 		Tags       []string `json:"tags" binding:"required,min=1"` // 至少一个标签
 	}
@@ -49,19 +56,12 @@ func CreatePost(c *gin.Context) {
 		}
 	}
 
-	// 打印过滤后的标签
-	log.Printf("Valid Tags: %v\n", validTags)
-
 	// 检查是否有有效标签
 	if len(validTags) == 0 {
 		log.Println("No valid tags provided.")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
 		return
 	}
-
-	// 生成文章摘要，取前5行作为摘要
-	contentLines := strings.Split(input.Content, "\n")
-	summary := strings.Join(contentLines[:min(5, len(contentLines))], "\n") // 提取前5行
 
 	// 开启事务
 	err := config.DB.Transaction(func(tx *gorm.DB) error {
@@ -73,7 +73,6 @@ func CreatePost(c *gin.Context) {
 				log.Printf("Error creating tag '%s': %v\n", tagName, err)
 				return err
 			}
-			log.Printf("Tag found or created: %v\n", tag)
 			tags = append(tags, tag)
 		}
 
@@ -81,23 +80,19 @@ func CreatePost(c *gin.Context) {
 		post := models.Post{
 			Title:      input.Title,
 			Content:    input.Content,
-			Summary:    summary,
+			Summary:    input.Summary,
 			CategoryID: input.CategoryID,
-			AuthorID:   userIDUint, // 使用转换后的作者ID
+			AuthorID:   userIDUint32, // 使用转换后的作者ID
 			Tags:       tags,
 			Views:      0,
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
 		}
 
-		log.Printf("Creating post: %+v\n", post)
-
 		if err := tx.Create(&post).Error; err != nil {
 			log.Printf("Error creating post: %v\n", err)
 			return err
 		}
-
-		log.Printf("Post created successfully: %+v\n", post)
 
 		// 返回成功的响应
 		c.JSON(http.StatusOK, post)

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 // 定义用户接口类型
 interface User {
@@ -34,7 +34,7 @@ export const useUserStore = defineStore("userStore", {
       this.error = null;
 
       try {
-        const response = await axios.post("/api/register", {
+        const response = await axiosInstance.post("/register", {
           username,
           password,
           email,
@@ -59,7 +59,7 @@ export const useUserStore = defineStore("userStore", {
       this.error = null;
 
       try {
-        const response = await axios.post("/api/login", {
+        const response = await axiosInstance.post("/login", {
           username,
           password,
         });
@@ -97,7 +97,7 @@ export const useUserStore = defineStore("userStore", {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const response = await axios.get("/api/profile", {
+          const response = await axiosInstance.get("/profile", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -128,8 +128,8 @@ export const useUserStore = defineStore("userStore", {
         }
 
         // 发起请求，带上 Authorization 头部
-        const response = await axios.post(
-          "/api/change-password",
+        const response = await axiosInstance.post(
+          "/change-password",
           {
             old_password: oldPassword,
             new_password: newPassword,

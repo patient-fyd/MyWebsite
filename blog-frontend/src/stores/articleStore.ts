@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 // 定义接口类型
 interface Article {
@@ -41,7 +41,7 @@ export const useArticleStore = defineStore("articleStore", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get("/api/popular-posts");
+        const response = await axiosInstance.get("/popular-posts");
         this.popularPosts = response.data;
       } catch (error) {
         this.error = "无法获取热门文章";
@@ -57,7 +57,7 @@ export const useArticleStore = defineStore("articleStore", {
       this.error = null;
 
       try {
-        const response = await axios.get("/api/posts", {
+        const response = await axiosInstance.get("/posts", {
           params: {
             page,
             page_size: pageSize,
@@ -78,7 +78,7 @@ export const useArticleStore = defineStore("articleStore", {
       this.error = null;
 
       try {
-        const response = await axios.get(`/api/posts/${id}`);
+        const response = await axiosInstance.get(`/posts/${id}`);
         this.articleDetail = response.data;
 
         // 更新热门文章列表中的浏览量
@@ -93,31 +93,28 @@ export const useArticleStore = defineStore("articleStore", {
         this.loading = false;
       }
     },
+
     // 发布文章
-    async createArticle(
-      title: string,
-      content: string,
-      categoryID: number,
-      tags: string[],
-    ) {
+    async createArticle(title, content, summary, categoryID, tags) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await axios.post("/api/posts", {
+        const response = await axiosInstance.post("/posts", {
           title,
           content,
+          summary,
           category_id: categoryID,
           tags,
         });
 
         if (response.status === 200) {
-          this.article = response.data; // 将发布成功的文章存入 state
+          this.article = response.data;
           alert("文章发布成功");
         }
-      } catch (error: any) {
+      } catch (error) {
         this.error = error.response?.data?.error || "发布文章失败";
-        alert(this.error);
+        alert(this.error); // 显示错误信息
       } finally {
         this.loading = false;
       }
