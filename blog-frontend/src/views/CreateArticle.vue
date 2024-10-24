@@ -65,7 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { ref, watch, onMounted, computed } from "vue";
 import { debounce } from "lodash";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
@@ -76,6 +77,7 @@ import { useArticleStore } from "@/stores/articleStore";
 import { useCategoryTagStore } from "@/stores/categoryTagStore";
 import { QuillEditor } from "@vueup/vue-quill";
 
+const router = useRouter();
 const title = ref("");
 const markdownContent = ref("### 在这里开始你的 Markdown 编辑");
 const content = ref(""); // Content for Quill editor
@@ -84,18 +86,22 @@ const showPublishModal = ref(false);
 const togglePrompt = ref(false); // Controls the editor switch prompt
 const savingStatus = ref("");
 const articleStore = useArticleStore();
-
 const categoryTagStore = useCategoryTagStore();
-const categories = categoryTagStore.categories;
-const availableTags = categoryTagStore.tags;
 
 // Fetch categories and tags when component mounts
 onMounted(async () => {
   await categoryTagStore.fetchCategories();
   await categoryTagStore.fetchTags();
+});
 
-  categories.values = categoryTagStore.categories;
-  availableTags.values = categoryTagStore.tags;
+const categories = computed(() => categoryTagStore.categories);
+const availableTags = computed(() => categoryTagStore.tags);
+
+onMounted(async () => {
+  await categoryTagStore.fetchCategories();
+  console.log("Categories fetched:", categories.value);
+  await categoryTagStore.fetchTags();
+  console.log("Tags fetched:", availableTags.value);
 });
 
 // Retrieve saved editor state and content from localStorage
@@ -187,7 +193,7 @@ const handleModalCancel = () => {
   showPublishModal.value = false;
 };
 
-// Publish article function
+// 发布文章函数
 const publishArticle = async (categoryID, tags, summary) => {
   try {
     await articleStore.createArticle(
@@ -197,21 +203,23 @@ const publishArticle = async (categoryID, tags, summary) => {
       categoryID,
       tags,
     );
+
     // 检查是否有错误
     if (articleStore.error) {
       // 显示错误信息
       alert(`发布文章失败：${articleStore.error}`);
     } else {
       // 成功发布文章后执行重定向
-      router.push("/"); // 重定向到主页
+      await router.push("/"); // 重定向到主页
 
       // 重置表单和状态
       title.value = "";
       markdownContent.value = "### 在这里开始你的 Markdown 编辑";
       content.value = "";
-      categoryID.value = 1; // 重置类别ID
-      tags.value = [];
-      summary.value = "";
+      // 移除对参数的赋值操作
+      // categoryID = 1;
+      // tags = [];
+      // summary = "";
       showPublishModal.value = false;
 
       // 清空 localStorage 中的草稿内容

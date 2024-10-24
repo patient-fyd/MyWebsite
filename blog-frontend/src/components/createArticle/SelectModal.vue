@@ -5,6 +5,8 @@
     <!-- 类别选择 -->
     <label for="category-select">类别：</label>
     <select id="category-select" v-model="selectedCategoryID">
+      <option disabled value="">请选择类别</option>
+      <!-- 可选：添加类别的占位符 -->
       <option
         v-for="category in categories"
         :key="category.id"
@@ -16,7 +18,9 @@
 
     <!-- 标签选择（最多选择两个） -->
     <label for="tag-select">标签：</label>
-    <select id="tag-select" v-model="selectedTag" @change="addTag">
+    <select id="tag-select" v-model="selectedTag">
+      <option disabled value="">请选择标签</option>
+      <!-- 添加占位符选项 -->
       <option v-for="tag in tags" :key="tag.id" :value="tag.name">
         {{ tag.name }}
       </option>
@@ -68,7 +72,7 @@ const props = defineProps({
 
 const emit = defineEmits(["confirm", "cancel", "update:isVisible"]);
 
-const selectedCategoryID = ref<number | null>(1); // 默认选择第一个类别的 ID
+const selectedCategoryID = ref<number | null>(null); // 初始值设为 null
 const selectedTag = ref("");
 const selectedTags = ref<string[]>([]); // 最多选择两个标签
 const summary = ref("");
@@ -84,22 +88,13 @@ watch(
   { immediate: true },
 );
 
-watch(
-  props.categories,
-  (newCategories) => {
-    console.log("Categories:", newCategories);
-    // 其他代码
-  },
-  { immediate: true },
-);
-
-watch(
-  props.tags,
-  (newTags) => {
-    console.log("Tags:", newTags);
-  },
-  { immediate: true },
-);
+// 监听标签的变化并添加标签
+watch(selectedTag, (newValue) => {
+  console.log("Selected tag changed:", newValue); // 调试输出
+  if (newValue) {
+    addTag();
+  }
+});
 
 // 添加标签，最多选择两个
 const addTag = () => {
@@ -109,8 +104,8 @@ const addTag = () => {
     selectedTags.value.length < 2
   ) {
     selectedTags.value.push(selectedTag.value);
+    selectedTag.value = ""; // 清空选择的标签
   }
-  selectedTag.value = "";
 };
 
 // 移除标签
