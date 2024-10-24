@@ -55,35 +55,23 @@
 
     <!-- 发布文章的模态框 -->
     <SelectModal
-      v-model:isVisible="showPublishModal"
-      :title="'确认发布文章？'"
-      :content="'请确认发布文章，确认后无法修改。'"
-      @confirm="publishArticle"
+      v-if="showPublishModal"
+      @confirm="handleModalConfirm"
+      @cancel="handleModalCancel"
     />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import { debounce } from "lodash";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import "highlight.js/styles/github.css";
-import mermaid from "mermaid";
 import SelectModal from "@/components/createArticle/SelectModal.vue";
 import Modal from "@/components/createArticle/Modal.vue";
 import { useArticleStore } from "@/stores/articleStore";
 import { QuillEditor } from "@vueup/vue-quill";
-
-console.log(
-  "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高",
-);
-
-mermaid.initialize({
-  startOnLoad: true,
-  theme: "default",
-  logLevel: "fatal",
-});
 
 const title = ref("");
 const markdownContent = ref("### 在这里开始你的 Markdown 编辑");
@@ -92,15 +80,32 @@ const isUsingQuill = ref(false); // 初始设置为使用MdEditor
 const showPublishModal = ref(false);
 const togglePrompt = ref(false); // 控制是否显示切换编辑器的提示
 const savingStatus = ref("");
+const categoryID = ref(1); // 假设初始类别 ID 为 1
+const tags = ref<string[]>([]); // 标签
+const summary = ref(""); // 文章摘要
 
 const articleStore = useArticleStore();
 
-// 从 localStorage 获取编辑器的状态
+// 从 localStorage 获取编辑器的状态和草稿内容
 onMounted(() => {
   const savedEditorType = localStorage.getItem("isUsingQuill");
+  const savedTitle = localStorage.getItem("articleTitle");
+  const savedMarkdownContent = localStorage.getItem("markdownContent");
+  const savedQuillContent = localStorage.getItem("quillContent");
+  const savedCategoryID = localStorage.getItem("categoryID");
+  const savedTags = localStorage.getItem("tags");
+  const savedSummary = localStorage.getItem("summary");
+
   if (savedEditorType !== null) {
     isUsingQuill.value = savedEditorType === "true";
   }
+
+  if (savedTitle) title.value = savedTitle;
+  if (savedMarkdownContent) markdownContent.value = savedMarkdownContent;
+  if (savedQuillContent) content.value = savedQuillContent;
+  if (savedCategoryID) categoryID.value = Number(savedCategoryID);
+  if (savedTags) tags.value = JSON.parse(savedTags);
+  if (savedSummary) summary.value = savedSummary;
 });
 
 // Quill 编辑器选项
@@ -115,39 +120,33 @@ const editorOptions = ref({
   },
 });
 
+// 自动保存到 localStorage 的函数
 savingStatus.value = "文章将自动保存！";
-
-// 自动保存的函数
-const saveContent = async () => {
+const saveContentToLocal = async () => {
   savingStatus.value = "保存中...";
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    localStorage.setItem("articleTitle", title.value);
+    localStorage.setItem("markdownContent", markdownContent.value);
+    localStorage.setItem("quillContent", content.value);
+    localStorage.setItem("categoryID", categoryID.value.toString());
+    localStorage.setItem("tags", JSON.stringify(tags.value));
+    localStorage.setItem("summary", summary.value);
     savingStatus.value = "保存成功！";
-    setTimeout(() => (savingStatus.value = "文章将自动保存"), 3000);
+    setTimeout(() => (savingStatus.value = "文章将自动保存！"), 3000);
   } catch (error) {
     savingStatus.value = "保存失败";
-    setTimeout(() => (savingStatus.value = "请手动保存"), 3000);
+    setTimeout(() => (savingStatus.value = "保存失败请注意！"), 3000);
   }
 };
 
-const debouncedSave = debounce(saveContent, 500);
+// 防抖函数，防止频繁保存
+const debouncedSave = debounce(saveContentToLocal, 1000);
 
-watch(markdownContent, (newValue) => {
-  debouncedSave(newValue);
+// 监听内容的变化并自动保存到 localStorage
+watch([title, markdownContent, content, categoryID, tags, summary], () => {
+  debouncedSave();
 });
-
-const publishArticle = async () => {
-  try {
-    await articleStore.createArticle(title.value, markdownContent.value);
-    alert("文章发布成功！");
-    title.value = "";
-    markdownContent.value = "### 在这里开始你的 Markdown 编辑";
-    showPublishModal.value = false;
-  } catch (error) {
-    console.error("发布文章失败", error);
-    alert("发布文章失败，请重试。");
-  }
-};
 
 // 提示切换编辑器前确认
 const promptToggleEditor = () => {
@@ -157,13 +156,8 @@ const promptToggleEditor = () => {
 // 确认切换编辑器
 const confirmToggleEditor = () => {
   isUsingQuill.value = !isUsingQuill.value;
-  // 保存状态到 localStorage
+  // 保存编辑器状态到 localStorage
   localStorage.setItem("isUsingQuill", String(isUsingQuill.value));
-  if (isUsingQuill.value) {
-    content.value = markdownContent.value; // 将 Markdown 内容转换为 Quill 内容
-  } else {
-    markdownContent.value = content.value; // 将 Quill 内容转换回 Markdown 内容
-  }
   togglePrompt.value = false; // 关闭提示框
 };
 
