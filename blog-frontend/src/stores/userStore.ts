@@ -6,11 +6,14 @@ interface User {
   id: number;
   username: string;
   email: string;
-  token?: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface UserState {
   user: User | null; // 当前用户信息
+  isAdmin: boolean; // 用户是否为管理员
   isAuthenticated: boolean; // 用户是否登录
   loading: boolean; // 加载状态
   error: string | null; // 错误信息
@@ -20,6 +23,7 @@ interface UserState {
 export const useUserStore = defineStore("userStore", {
   state: (): UserState => ({
     user: null,
+    isAdmin: false,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -53,6 +57,44 @@ export const useUserStore = defineStore("userStore", {
       }
     },
 
+    // 获取用户信息
+    async fetchUserInfo() {
+      try {
+        const response = await axiosInstance.get("/user");
+
+        // 调试输出
+        console.log("完整的用户响应:", response);
+        console.log("响应数据:", response.data);
+
+        // 将响应中的数据保存到 store
+        const userData = response.data;
+        console.log("用户信息（分解的）:", userData);
+
+        // 确保 response.data 中的属性是否符合预期
+        this.user = {
+          id: userData.id,
+          username: userData.Username, // API 返回的字段名
+          email: userData.Email, // API 返回的字段名
+          role: userData.Role, // API 返回的字段名
+          createdAt: userData.CreatedAt,
+          updatedAt: userData.UpdatedAt,
+        };
+
+        console.log("赋值后的用户信息:", this.user);
+
+        if (userData.Role === "admin") {
+          console.log("用户是管理员");
+          this.isAdmin = true;
+        } else {
+          console.log("用户不是管理员");
+          this.isAdmin = false;
+        }
+      } catch (error) {
+        console.error("获取用户信息失败", error);
+        throw new Error("无法获取用户信息");
+      }
+    },
+
     // 用户登录
     async login(username: string, password: string) {
       this.loading = true;
@@ -75,6 +117,8 @@ export const useUserStore = defineStore("userStore", {
           // 保存 refresh_token
           const refreshToken = response.data.refresh_token;
           localStorage.setItem("refresh_token", refreshToken);
+
+          await this.fetchUserInfo();
         }
       } catch (error: any) {
         this.error = error.response?.data?.error || "登录失败";
@@ -90,27 +134,6 @@ export const useUserStore = defineStore("userStore", {
       localStorage.removeItem("token"); // 清除 access_token
       localStorage.removeItem("refresh_token"); // 清除 refresh_token
       alert("已退出登录");
-    },
-
-    // 自动登录
-    async checkAuth() {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const response = await axiosInstance.get("/profile", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (response.status === 200) {
-            this.user = response.data.user;
-            this.isAuthenticated = true;
-          }
-        } catch (error: any) {
-          this.logout(); // 如果 token 无效，登出
-        }
-      }
     },
 
     // 修改密码

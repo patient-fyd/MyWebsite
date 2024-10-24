@@ -2,7 +2,9 @@
   <div class="navbar">
     <!-- 网站Logo -->
     <div class="logo">
-      <img src="@/assets/logo-no-background.png" alt="网站Logo" />
+      <router-link to="/">
+        <img src="@/assets/logo-no-background.png" alt="网站Logo" />
+      </router-link>
     </div>
 
     <!-- 导航链接 -->
@@ -23,7 +25,7 @@
         </li>
         <li class="nav-item">
           <router-link to="/guestbook" exact-active-class="active"
-            >留言小本</router-link
+            >留言本站</router-link
           >
         </li>
 
@@ -46,8 +48,8 @@
           <!-- 二级导航菜单 -->
           <transition name="fade">
             <ul v-if="isDropdownVisible" class="dropdown-menu">
-              <!-- 当用户已登录时，显示这些选项 -->
-              <li v-if="isAuthenticated" class="dropdown-item">
+              <!-- 当用户已登录并且是管理员时，显示创建文章 -->
+              <li v-if="isAuthenticated && isAdmin" class="dropdown-item">
                 <router-link to="/posts">创建文章</router-link>
               </li>
               <li v-if="isAuthenticated" class="dropdown-item">
@@ -73,6 +75,7 @@
     </div>
   </div>
 </template>
+
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 import { useUserStore } from "@/stores"; // 引入用户 store
@@ -83,6 +86,7 @@ const userStore = useUserStore();
 
 // 使用 computed 来确保 isAuthenticated 是响应式的
 const isAuthenticated = computed(() => userStore.isAuthenticated);
+const isAdmin = computed(() => userStore.isAdmin);
 
 const router = useRouter();
 
