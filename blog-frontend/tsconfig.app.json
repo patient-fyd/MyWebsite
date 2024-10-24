@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node","md-editor-v3"],
+    "types": ["node","md-editor-v3","@vueup/vue-quill"],
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -20,6 +20,10 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.d.ts",],
   "exclude": ["node_modules"]
 }
