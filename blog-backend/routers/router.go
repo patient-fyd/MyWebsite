@@ -33,6 +33,7 @@ func SetupRoutes(r *gin.Engine) {
 
 		// 分类管理（需要用户认证的操作）
 		api.GET("/categories", controllers.GetCategories)                                      // 获取分类列表
+		api.GET("/posts/category/:category_id", controllers.GetPostsByCategoryID)              // 获取分类下的文章列表
 		api.POST("/categories", middleware.AuthMiddleware(), controllers.CreateCategory)       // 创建分类
 		api.PUT("/categories/:id", middleware.AuthMiddleware(), controllers.UpdateCategory)    // 更新分类
 		api.DELETE("/categories/:id", middleware.AuthMiddleware(), controllers.DeleteCategory) // 删除分类

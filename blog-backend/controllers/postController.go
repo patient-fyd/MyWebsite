@@ -147,6 +147,35 @@ func GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+// GetPostsByCategoryID 根据类别ID返回文章列表
+func GetPostsByCategoryID(c *gin.Context) {
+	var posts []models.Post
+	db := config.DB // 使用全局数据库连接
+
+	// 获取类别ID
+	categoryID := c.Param("category_id")
+
+	// 构建查询，移除分页功能
+	query := db.Preload("Author").Preload("Category").Preload("Tags").
+		Where("category_id = ?", categoryID).
+		Order("created_at desc") // 按创建时间倒序排序
+
+	// 执行查询
+	result := query.Find(&posts)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + result.Error.Error()})
+		return
+	}
+
+	// 如果文章列表为空，返回404或一个提示信息
+	if len(posts) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "该类别下没有文章"})
+		return
+	}
+
+	c.JSON(http.StatusOK, posts)
+}
+
 // GetPost 获取文章详情，包括文章内容、作者信息、评论等
 func GetPost(c *gin.Context) {
 	var post models.Post

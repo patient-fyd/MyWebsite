@@ -41,6 +41,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "CreateArticle",
     component: () => import("@/views/CreateArticle.vue"),
   },
+  {
+    path: "/category/:categoryId",
+    name: "CategoryList",
+    component: () => import("@/views/CategoryPosts.vue"),
+    props: true,
+  },
 ];
 
 const router = createRouter({

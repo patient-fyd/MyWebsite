@@ -10,25 +10,16 @@
       <ul class="category-list">
         <li
           v-for="(category, index) in categories"
-          :key="index"
+          :key="category.id"
           class="category-item"
         >
-          <a href="#" class="category-link"
-            >{{ category.name }} ({{ category.count }})</a
+          <!-- 点击分类后跳转到对应类别的文章列表页面 -->
+          <router-link
+            :to="{ name: 'CategoryList', params: { categoryId: category.id } }"
+            class="category-link"
           >
-
-          <!-- 如果有子分类，显示子分类 -->
-          <ul v-if="category.subcategories" class="subcategory-list">
-            <li
-              v-for="(subcategory, subindex) in category.subcategories"
-              :key="subindex"
-              class="subcategory-item"
-            >
-              <a href="#" class="subcategory-link"
-                >{{ subcategory.name }} ({{ subcategory.count }})</a
-              >
-            </li>
-          </ul>
+            {{ category.name }}
+          </router-link>
         </li>
       </ul>
     </div>
@@ -36,39 +27,18 @@
 </template>
 
 <script setup lang="ts">
-// 假设从服务端获取的分类数据
-const categories = [
-  { name: "业界新闻", count: 33 },
-  { name: "企业应用", count: 2 },
-  { name: "技术新闻", count: 38 },
-  { name: "技术管理", count: 19 },
-  { name: "技术译物", count: 125 },
-  {
-    name: "操作系统",
-    count: 97,
-    subcategories: [
-      { name: "Unix/Linux", count: 81 },
-      { name: "Windows", count: 12 },
-    ],
-  },
-  { name: "数据库", count: 11 },
-  { name: "杂项资源", count: 295 },
-  { name: "流程方法", count: 48 },
-  { name: "程序设计", count: 110 },
-  { name: "系统架构", count: 15 },
-  { name: "编程工具", count: 67 },
-  {
-    name: "编程语言",
-    count: 326,
-    subcategories: [
-      { name: ".NET编程", count: 3 },
-      { name: "Ajax开发", count: 9 },
-      { name: "C/C++语言", count: 74 },
-      { name: "Erlang", count: 1 },
-      { name: "Go 语言", count: 15 },
-    ],
-  },
-];
+import { ref, onMounted } from "vue";
+import { useCategoryTagStore } from "@/stores/categoryTagStore";
+
+// 引入 store 获取分类数据
+const categoryTagStore = useCategoryTagStore();
+const categories = ref([]); // 用来存储分类数据
+
+// 获取分类数据并更新到前端
+onMounted(async () => {
+  await categoryTagStore.fetchCategories(); // 调用 fetchCategories 动作
+  categories.value = categoryTagStore.categories;
+});
 </script>
 
 <style scoped>
