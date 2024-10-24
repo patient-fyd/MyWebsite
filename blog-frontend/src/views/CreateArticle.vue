@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { debounce } from "lodash";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
@@ -84,15 +84,24 @@ mermaid.initialize({
   theme: "default",
   logLevel: "fatal",
 });
+
 const title = ref("");
 const markdownContent = ref("### 在这里开始你的 Markdown 编辑");
 const content = ref(""); // Quill 编辑器的内容
-const isUsingQuill = ref(false); // 初始设置为使用 MdEditor
+const isUsingQuill = ref(false); // 初始设置为使用MdEditor
 const showPublishModal = ref(false);
 const togglePrompt = ref(false); // 控制是否显示切换编辑器的提示
 const savingStatus = ref("");
 
 const articleStore = useArticleStore();
+
+// 从 localStorage 获取编辑器的状态
+onMounted(() => {
+  const savedEditorType = localStorage.getItem("isUsingQuill");
+  if (savedEditorType !== null) {
+    isUsingQuill.value = savedEditorType === "true";
+  }
+});
 
 // Quill 编辑器选项
 const editorOptions = ref({
@@ -107,6 +116,7 @@ const editorOptions = ref({
 });
 
 savingStatus.value = "文章将自动保存！";
+
 // 自动保存的函数
 const saveContent = async () => {
   savingStatus.value = "保存中...";
@@ -114,7 +124,6 @@ const saveContent = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     savingStatus.value = "保存成功！";
     setTimeout(() => (savingStatus.value = "文章将自动保存"), 3000);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     savingStatus.value = "保存失败";
     setTimeout(() => (savingStatus.value = "请手动保存"), 3000);
@@ -148,6 +157,8 @@ const promptToggleEditor = () => {
 // 确认切换编辑器
 const confirmToggleEditor = () => {
   isUsingQuill.value = !isUsingQuill.value;
+  // 保存状态到 localStorage
+  localStorage.setItem("isUsingQuill", String(isUsingQuill.value));
   if (isUsingQuill.value) {
     content.value = markdownContent.value; // 将 Markdown 内容转换为 Quill 内容
   } else {
@@ -197,7 +208,7 @@ body {
 .input-group {
   display: flex;
   align-items: center;
-  margin-left: 10px;
+  margin-left: 15px;
   flex-grow: 1; /* 确保 input-group 可以填满除按钮组外的空间 */
 }
 
@@ -218,6 +229,7 @@ body {
 .button-group {
   display: flex;
   gap: 10px;
+  margin-right: 5px;
 }
 
 .button-group button,
