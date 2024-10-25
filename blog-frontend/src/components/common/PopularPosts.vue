@@ -42,10 +42,10 @@ let intervalId: number | undefined = undefined;
 onMounted(() => {
   articleStore.fetchPopularPosts();
 
-  // 每隔 5 分钟刷新一次热门文章列表
+  // 每隔 1 小时刷新一次热门文章列表
   intervalId = setInterval(() => {
     articleStore.fetchPopularPosts(); // 修正了 postStore 为 articleStore
-  }, 300000); // 5 分钟
+  }, 3600000);
 });
 
 // 清理定时器

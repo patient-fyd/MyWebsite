@@ -24,6 +24,8 @@
       </div>
     </div>
 
+    <ScrollToTop />
+
     <!-- 如果不是全屏页面，显示页脚 -->
     <div v-if="!isFullScreenPage" class="footer">
       <AppFooter />
@@ -38,6 +40,7 @@ import AppNavbar from "./components/common/Navbar.vue";
 import AppFooter from "./components/common/Footer.vue";
 import GoalView from "@/components/common/GoalView.vue";
 import Common from "@/views/Common.vue";
+import ScrollToTop from "@/components/common/ScrollToTop.vue";
 
 // 使用 Vue Router 获取当前路由
 const route = useRoute();

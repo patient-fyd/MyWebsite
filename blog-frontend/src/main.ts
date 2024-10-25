@@ -21,6 +21,10 @@ const app = createApp(App);
 // 全局注册 Quill 组件
 app.component("QuillEditor", QuillEditor);
 
+router.afterEach(() => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 // 使用路由和 Pinia
 app.use(router);
 app.use(pinia);

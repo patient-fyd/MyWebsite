@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleStore } from "@/stores/articleStore";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
