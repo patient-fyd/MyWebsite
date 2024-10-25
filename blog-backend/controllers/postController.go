@@ -294,21 +294,19 @@ func SearchPosts(c *gin.Context) {
 	db := config.DB
 
 	// 获取查询参数
-	keyword := c.Query("keyword") // 搜索的关键词（在标题和内容中搜索）
-	tag := c.Query("tag")         // 根据标签搜索
+	keyword := c.Query("keyword") // 搜索的关键词（在标题、内容、摘要、标签中搜索）
 
-	query := db.Preload("Author").Preload("Category").Preload("Tags")
+	query := db.Model(&models.Post{}).Preload("Author").Preload("Category").Preload("Tags")
 
-	// 如果有关键字，按标题和内容进行搜索
 	if keyword != "" {
-		query = query.Where("title LIKE ? OR content LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
-	}
+		keywordPattern := "%" + keyword + "%"
 
-	// 如果有标签，根据标签进行搜索
-	if tag != "" {
-		query = query.Joins("JOIN post_tags ON post_tags.post_id = posts.id").
-			Joins("JOIN tags ON post_tags.tag_id = tags.id").
-			Where("tags.name = ?", tag)
+		// 加入 LEFT JOIN，以便在 WHERE 子句中使用 tags.name
+		query = query.Joins("LEFT JOIN post_tags ON post_tags.post_id = posts.id").
+			Joins("LEFT JOIN tags ON tags.id = post_tags.tag_id").
+			Where("posts.title LIKE ? OR posts.content LIKE ? OR posts.summary LIKE ? OR tags.name LIKE ?",
+				keywordPattern, keywordPattern, keywordPattern, keywordPattern).
+			Group("posts.id")
 	}
 
 	// 执行查询

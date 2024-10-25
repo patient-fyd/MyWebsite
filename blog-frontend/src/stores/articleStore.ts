@@ -30,6 +30,9 @@ export const useArticleStore = defineStore(
     const articleDetail = ref<Article | null>(null);
     const loading = ref(false);
     const error = ref<string | null>(null);
+    const searchResults = ref<Article[]>([]);
+    const searchLoading = ref(false);
+    const searchError = ref<string | null>(null);
 
     // 获取热门文章
     const fetchPopularPosts = async () => {
@@ -188,6 +191,26 @@ export const useArticleStore = defineStore(
       }
     };
 
+    const searchArticles = async (keyword: string, tag?: string) => {
+      searchLoading.value = true;
+      searchError.value = null;
+
+      try {
+        const response = await axiosInstance.get("/search", {
+          params: {
+            keyword,
+            tag,
+          },
+        });
+        searchResults.value = response.data;
+      } catch (err: any) {
+        searchError.value = err.response?.data?.error || "搜索文章失败";
+        console.error("Error searching articles:", err);
+      } finally {
+        searchLoading.value = false;
+      }
+    };
+
     return {
       // 状态
       popularPosts,
@@ -195,6 +218,9 @@ export const useArticleStore = defineStore(
       articleDetail,
       loading,
       error,
+      searchResults,
+      searchLoading,
+      searchError,
       // 方法
       fetchPopularPosts,
       fetchArticles,
@@ -202,6 +228,7 @@ export const useArticleStore = defineStore(
       createArticle,
       deletePostById,
       updatePostById,
+      searchArticles,
     };
   },
   {

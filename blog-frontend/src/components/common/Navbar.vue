@@ -20,7 +20,7 @@
         </li>
         <li class="nav-item">
           <router-link to="/plugin" exact-active-class="active"
-            >编程教程</router-link
+            >学习打卡</router-link
           >
         </li>
         <li class="nav-item">

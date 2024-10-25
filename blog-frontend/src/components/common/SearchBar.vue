@@ -1,4 +1,4 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <div class="search-bar-container">
     <div class="search-bar">
       <!-- 搜索输入框 -->
@@ -7,6 +7,7 @@
         v-model="query"
         class="search-input"
         placeholder="Search ..."
+        @keyup.enter="performSearch"
       />
 
       <!-- 搜索按钮 -->
@@ -29,13 +30,21 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const query = ref("");
+const router = useRouter();
 
 // 执行搜索的逻辑
 const performSearch = () => {
-  console.log("搜索关键字:", query.value);
-  // 可以在这里执行搜索请求或调用父组件的回调
+  if (query.value.trim() !== "") {
+    router.push({
+      name: "SearchResults",
+      query: { keyword: query.value.trim() },
+    });
+  } else {
+    router.push("/");
+  }
 };
 </script>
 

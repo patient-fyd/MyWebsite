@@ -53,6 +53,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("@/views/CategoryPosts.vue"),
     props: true,
   },
+  {
+    path: "/search",
+    name: "SearchResults",
+    component: () => import("@/views/SearchResults.vue"),
+  },
 ];
 
 const router = createRouter({
