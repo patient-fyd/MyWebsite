@@ -10,23 +10,34 @@
       />
     </div>
     <div class="article-content">
-      <p>{{ post.content }}</p>
+      <!-- 使用 MdPreview 渲染 Markdown 内容 -->
+      <MdPreview v-model="post.content" />
+    </div>
+    <!-- 在文章内容底部添加按钮 -->
+    <div class="article-actions">
+      <button @click="editPost">修改文章</button>
+      <button @click="deletePost">删除文章</button>
     </div>
   </div>
-  <p v-if="loading">加载中...</p>
-  <p v-if="error">{{ error }}</p>
+  <p v-else-if="loading">加载中...</p>
+  <p v-else-if="error">{{ error }}</p>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
-import { useRoute } from "vue-router";
-import { useArticleStore } from "@/stores";
+import { useRoute, useRouter } from "vue-router";
+import { useArticleStore } from "@/stores/articleStore";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
 
+// 导入 MdPreview 组件和样式
+import { MdPreview } from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
+import "highlight.js/styles/github.css";
+
 const route = useRoute();
+const router = useRouter();
 const postStore = useArticleStore();
 
-// 使用 computed 确保 articleDetail 是响应式的
 const post = computed(() => postStore.articleDetail);
 const loading = computed(() => postStore.loading);
 const error = computed(() => postStore.error);
@@ -42,13 +53,19 @@ onMounted(() => {
   fetchPost(postId);
 });
 
-// 监听路由参数变化，当文章 ID 改变时重新获取文章详情
-watch(
-  () => route.params.id,
-  (newId) => {
-    fetchPost(Number(newId));
-  },
-);
+// 删除文章
+const deletePost = async () => {
+  if (confirm("确定要删除这篇文章吗？")) {
+    await postStore.deletePostById(post.value!.id);
+    // 删除成功后跳转到主页
+    await router.push("/");
+  }
+};
+
+// 修改文章
+const editPost = () => {
+  router.push({ name: "EditArticle", params: { id: post.value!.id } });
+};
 </script>
 
 <style scoped>
@@ -69,5 +86,16 @@ watch(
 .article-content {
   margin-top: 20px;
   line-height: 1.6;
+}
+
+.article-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.article-actions button {
+  padding: 8px 16px;
+  font-size: 16px;
 }
 </style>
