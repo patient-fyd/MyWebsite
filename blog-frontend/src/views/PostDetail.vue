@@ -64,7 +64,11 @@ const deletePost = async () => {
 
 // 修改文章
 const editPost = () => {
-  router.push({ name: "EditArticle", params: { id: post.value!.id } });
+  router.push({
+    name: "EditArticle",
+    params: { id: post.value!.id },
+    query: { edit: "true" },
+  });
 };
 </script>
 

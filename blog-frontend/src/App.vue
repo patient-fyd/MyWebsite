@@ -43,17 +43,18 @@ import Common from "@/views/Common.vue";
 const route = useRoute();
 const isFullScreenPage = ref(false);
 
+// 监听路径和查询参数变化
 watch(
-  () => route.path,
-  (newPath) => {
+  () => ({ path: route.path, editMode: route.query.edit }),
+  ({ path, editMode }) => {
     isFullScreenPage.value =
-      newPath === "/:pathMatch(.*)*" ||
-      newPath === "/login" ||
-      newPath === "/register" ||
-      newPath === "/change-password" ||
-      newPath === "/posts";
+      path === "/:pathMatch(.*)*" ||
+      path === "/login" ||
+      path === "/register" ||
+      path === "/change-password" ||
+      editMode === "true"; // 当 editMode 为 true 时全屏
   },
-  { immediate: true }, // 确保初次加载时也能立即判断路由
+  { immediate: true },
 );
 </script>
 

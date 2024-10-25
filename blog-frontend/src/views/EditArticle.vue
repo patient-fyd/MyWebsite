@@ -249,3 +249,89 @@ const updatePost = () => {
   showPublishModal.value = true;
 };
 </script>
+<style scoped>
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 高度设为视口高度 */
+  width: 100vw; /* 宽度设为视口宽度 */
+  box-sizing: border-box;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+  flex-grow: 1; /* 确保 input-group 可以填满除按钮组外的空间 */
+}
+
+.title-input {
+  width: 80%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.save-status {
+  margin-left: 15px; /* 保存状态信息与输入框的距离 */
+  color: #a89f9f; /* 保存状态文字颜色 */
+  font-size: 0.9em;
+  white-space: nowrap; /* 防止文字换行 */
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-right: 5px;
+}
+
+.button-group button,
+.button-link {
+  padding: 10px 15px;
+  background-color: #8dc9e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none; /* 去掉 router-link 的下划线 */
+  display: inline-flex; /* 保持和按钮一样的布局 */
+  align-items: center;
+  justify-content: center;
+}
+
+.button-link {
+  margin-right: 10px;
+}
+
+.button-group button:hover,
+.button-link:hover {
+  background-color: #47abef;
+}
+
+i {
+  color: #ffffff;
+}
+
+.custom-editor {
+  flex-grow: 1; /* 让编辑器占满剩余空间 */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-height: 400px;
+  overflow: auto;
+}
+</style>
