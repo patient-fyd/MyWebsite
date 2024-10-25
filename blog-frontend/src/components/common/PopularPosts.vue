@@ -29,19 +29,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useArticleStore } from "@/stores/articleStore";
 
-const postStore = useArticleStore();
-const { fetchPopularPosts, popularPosts, loading, error } = postStore;
+const articleStore = useArticleStore();
+
+const posts = computed(() => articleStore.popularPosts);
+const loading = computed(() => articleStore.loading);
+const error = computed(() => articleStore.error);
 let intervalId: number | undefined = undefined;
 
 onMounted(() => {
-  fetchPopularPosts();
+  articleStore.fetchPopularPosts();
 
   // 每隔 5 分钟刷新一次热门文章列表
   intervalId = setInterval(() => {
-    postStore.fetchPopularPosts();
+    articleStore.fetchPopularPosts(); // 修正了 postStore 为 articleStore
   }, 300000); // 5 分钟
 });
 
@@ -51,9 +54,6 @@ onUnmounted(() => {
     clearInterval(intervalId);
   }
 });
-
-// 绑定 store 中的数据
-const posts = popularPosts;
 </script>
 
 <style scoped>
