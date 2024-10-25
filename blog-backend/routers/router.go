@@ -53,5 +53,18 @@ func SetupRoutes(r *gin.Engine) {
 		api.POST("/record-visit", controllers.RecordVisit)     // 记录站点访问
 		api.GET("/statistics", controllers.GetStatistics)      // 获取站点统计数据
 		api.GET("/popular-posts", controllers.GetPopularPosts) // 获取热门文章
+
+		// 项目相关的路由
+		api.GET("/projects", middleware.AuthMiddleware(), controllers.GetProjects)    // 获取用户的所有任务项目
+		api.POST("/projects", middleware.AuthMiddleware(), controllers.CreateProject) // 创建新的任务项目
+
+		// 细分任务相关的路由
+		api.GET("/projects/:project_id/tasks", middleware.AuthMiddleware(), controllers.GetTasks)    // 获取指定项目下的细分任务
+		api.POST("/projects/:project_id/tasks", middleware.AuthMiddleware(), controllers.CreateTask) // 创建新的细分任务
+		api.PUT("/tasks/:task_id", middleware.AuthMiddleware(), controllers.UpdateTask)              // 更新细分任务
+
+		// 打卡记录相关的路由
+		api.GET("/checkins", middleware.AuthMiddleware(), controllers.GetCheckIns) // 获取用户的打卡记录
+
 	}
 }

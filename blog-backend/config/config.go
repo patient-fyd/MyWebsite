@@ -38,5 +38,8 @@ func MigrateDB() error {
 		&models.SiteStatistic{},
 		&models.Category{},
 		&models.Tag{},
+		&models.Project{},
+		&models.Task{},
+		&models.CheckIn{},
 	)
 }
