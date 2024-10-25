@@ -35,7 +35,7 @@
 .home-link {
   margin-top: 2rem;
   padding: 10px 20px;
-  background-color: #2196f3;
+  background-color: #8dc9e8;
   color: white;
   text-decoration: none;
   border-radius: 5px;
@@ -43,6 +43,6 @@
 }
 
 .home-link:hover {
-  background-color: #1976d2;
+  background-color: #47abef;
 }
 </style>

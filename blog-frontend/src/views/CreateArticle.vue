@@ -88,6 +88,10 @@ const savingStatus = ref("");
 const articleStore = useArticleStore();
 const categoryTagStore = useCategoryTagStore();
 
+console.log(
+  "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高",
+);
+
 // Fetch categories and tags when component mounts
 onMounted(async () => {
   await categoryTagStore.fetchCategories();
@@ -99,9 +103,7 @@ const availableTags = computed(() => categoryTagStore.tags);
 
 onMounted(async () => {
   await categoryTagStore.fetchCategories();
-  console.log("Categories fetched:", categories.value);
   await categoryTagStore.fetchTags();
-  console.log("Tags fetched:", availableTags.value);
 });
 
 // Retrieve saved editor state and content from localStorage

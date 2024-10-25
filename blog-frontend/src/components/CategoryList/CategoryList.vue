@@ -52,16 +52,17 @@
 
 <script setup lang="ts">
 import { useCategoryTagStore } from "@/stores/categoryTagStore";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { onMounted, watch, computed, ref } from "vue";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
 import Pagination from "@/components/home/Pagination.vue"; // 确保正确导入
 
 const store = useCategoryTagStore();
 const router = useRouter();
+const route = useRoute();
 
 // 获取路由参数中的 categoryId
-const categoryId = router.params.categoryId;
+const categoryId = route.params.categoryId;
 
 // 分页参数
 const currentPage = ref(1);
@@ -92,7 +93,7 @@ onMounted(async () => {
 
 // 监听路由参数的变化
 watch(
-  () => router.params.categoryId,
+  () => route.params.categoryId,
   async (newCategoryId) => {
     if (store.categories.length === 0) {
       await store.fetchCategories();

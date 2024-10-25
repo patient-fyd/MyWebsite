@@ -48,10 +48,10 @@ const isFullScreenPage = ref(false);
 
 // 监听路径和查询参数变化
 watch(
-  () => ({ path: route.path, editMode: route.query.edit }),
-  ({ path, editMode }) => {
+  () => ({ name: route.name, path: route.path, editMode: route.query.edit }),
+  ({ name, path, editMode }) => {
     isFullScreenPage.value =
-      path === "/:pathMatch(.*)*" ||
+      name === "NotFound" ||
       path === "/login" ||
       path === "/register" ||
       path === "/change-password" ||

@@ -109,12 +109,13 @@ const goToPage = (page: number) => {
 <style scoped>
 .pagination-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
 .pagination-info {
-  margin-right: 10px;
+  font-size: 15px;
 }
 
 .pagination {
@@ -131,7 +132,7 @@ const goToPage = (page: number) => {
 }
 
 .page-item.active {
-  background-color: #007bff;
+  background-color: #8dc9e8;
   color: #fff;
 }
 
