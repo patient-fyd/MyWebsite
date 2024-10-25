@@ -68,14 +68,26 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  initialCategoryID: {
+    type: Number,
+    default: null,
+  },
+  initialTags: {
+    type: Array,
+    default: () => [],
+  },
+  initialSummary: {
+    type: String,
+    default: "",
+  },
 });
 
 const emit = defineEmits(["confirm", "cancel", "update:isVisible"]);
 
-const selectedCategoryID = ref<number | null>(null); // 初始值设为 null
+const selectedCategoryID = ref<number | null>(props.initialCategoryID); // 初始值设为 null
 const selectedTag = ref("");
-const selectedTags = ref<string[]>([]); // 最多选择两个标签
-const summary = ref("");
+const selectedTags = ref<string[]>(props.initialTags); // 最多选择两个标签
+const summary = ref(props.initialSummary);
 
 // 监听 categories 的变化，初始化 selectedCategoryID
 watch(
