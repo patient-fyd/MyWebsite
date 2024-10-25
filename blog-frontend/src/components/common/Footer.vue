@@ -25,11 +25,11 @@
 
 <style scoped>
 .footer {
-  background-color: #f5f5f5; /* 背景颜色 */
-  color: #333; /* 文字颜色 */
+  background-color: #8dc9e8; /* 背景颜色 */
+  color: #ffffff; /* 文字颜色 */
   padding: 20px;
   text-align: center; /* 文本居中 */
-  font-size: 14px;
+  font-size: 16px;
   position: relative;
   bottom: 0;
   box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
@@ -37,6 +37,16 @@
 
 .footer-content p {
   margin: 5px 0;
+}
+
+a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #47abef;
+  }
 }
 
 @media (max-width: 768px) {
