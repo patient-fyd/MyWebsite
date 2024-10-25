@@ -55,6 +55,7 @@ watch(
       path === "/login" ||
       path === "/register" ||
       path === "/change-password" ||
+      path === "/posts" ||
       editMode === "true"; // 当 editMode 为 true 时全屏
   },
   { immediate: true },

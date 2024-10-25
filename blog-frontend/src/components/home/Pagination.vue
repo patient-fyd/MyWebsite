@@ -16,6 +16,9 @@
         «
       </li>
 
+      <!-- 省略号（前） -->
+      <li v-if="showEllipsisBefore" class="page-item">...</li>
+
       <!-- 数字页码显示 -->
       <li
         v-for="page in visiblePages"
@@ -27,11 +30,10 @@
         {{ page }}
       </li>
 
-      <!-- 省略号 -->
-      <li v-if="showEllipsisBefore">...</li>
-      <li v-if="showEllipsisAfter">...</li>
+      <!-- 省略号（后） -->
+      <li v-if="showEllipsisAfter" class="page-item">...</li>
 
-      <!-- 末页 -->
+      <!-- 尾页 -->
       <li
         @click="goToPage(totalPages)"
         class="page-item"
@@ -39,38 +41,48 @@
       >
         »
       </li>
-      <li
-        @click="goToPage(totalPages)"
-        class="page-item"
-        :class="{ disabled: currentPage === totalPages }"
-      >
-        末页
-      </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
-// 页码相关数据
-const currentPage = ref(1);
-const totalPages = ref(74);
+const props = defineProps({
+  totalItems: {
+    type: Number,
+    required: true,
+  },
+  pageSize: {
+    type: Number,
+    default: 6,
+  },
+  currentPage: {
+    type: Number,
+    default: 1,
+  },
+});
+
+const emits = defineEmits(["update:currentPage"]);
+
+// 计算总页数
+const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize));
 
 // 根据当前页计算要显示的页码
 const visiblePages = computed(() => {
   const pages = [];
-  const maxVisible = 10;
+  const maxVisible = 7; // 最多显示的页码数
   const half = Math.floor(maxVisible / 2);
 
-  let start = Math.max(1, currentPage.value - half);
-  let end = Math.min(totalPages.value, currentPage.value + half);
+  let start = Math.max(1, props.currentPage - half);
+  let end = Math.min(totalPages.value, props.currentPage + half);
 
-  if (start === 1) {
-    end = Math.min(totalPages.value, maxVisible);
-  }
-  if (end === totalPages.value) {
-    start = Math.max(1, totalPages.value - maxVisible + 1);
+  if (end - start < maxVisible - 1) {
+    if (start === 1) {
+      end = Math.min(totalPages.value, start + maxVisible - 1);
+    } else if (end === totalPages.value) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
   }
 
   for (let i = start; i <= end; i++) {
@@ -81,55 +93,46 @@ const visiblePages = computed(() => {
 });
 
 // 是否显示省略号
-const showEllipsisBefore = computed(() => visiblePages.value[0] > 1);
+const showEllipsisBefore = computed(() => visiblePages.value[0] > 2);
 const showEllipsisAfter = computed(
-  () => visiblePages.value[visiblePages.value.length - 1] < totalPages.value,
+  () =>
+    visiblePages.value[visiblePages.value.length - 1] < totalPages.value - 1,
 );
 
 // 跳转页面
 const goToPage = (page: number) => {
-  if (page < 1 || page > totalPages.value || page === currentPage.value) return;
-  currentPage.value = page;
+  if (page < 1 || page > totalPages.value || page === props.currentPage) return;
+  emits("update:currentPage", page);
 };
 </script>
 
 <style scoped>
 .pagination-container {
-  text-align: center;
-  margin-bottom: 20px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  font-size: 14px;
-  color: #4a6a7b;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pagination-info {
-  margin-bottom: 10px;
+  margin-right: 10px;
 }
 
 .pagination {
-  display: inline-flex;
   list-style: none;
+  display: flex;
   padding: 0;
-  margin: 0;
 }
 
 .page-item {
-  padding: 0 10px;
+  padding: 5px 10px;
+  margin: 0 2px;
   cursor: pointer;
-  color: #4a6a7b;
-  border-radius: 5px;
-}
-
-.page-item:hover {
-  background-color: #e0e0e0;
+  border: 1px solid #ddd;
 }
 
 .page-item.active {
-  font-weight: bold;
-  color: #000;
+  background-color: #007bff;
+  color: #fff;
 }
 
 .page-item.disabled {

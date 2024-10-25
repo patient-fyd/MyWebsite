@@ -38,21 +38,34 @@
         <button @click="readMore(article.id)">阅读更多</button>
       </div>
     </div>
+
+    <!-- 分页组件 -->
+    <Pagination
+      v-if="totalArticles > pageSize"
+      :totalItems="totalArticles"
+      :pageSize="pageSize"
+      :currentPage="currentPage"
+      @update:currentPage="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useCategoryTagStore } from "@/stores/categoryTagStore";
-import { useRouter, useRoute } from "vue-router";
-import { onMounted, watch, computed } from "vue";
+import { useRouter } from "vue-router";
+import { onMounted, watch, computed, ref } from "vue";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
+import Pagination from "@/components/home/Pagination.vue"; // 确保正确导入
 
 const store = useCategoryTagStore();
 const router = useRouter();
-const route = useRoute();
 
 // 获取路由参数中的 categoryId
-const categoryId = route.params.categoryId;
+const categoryId = router.params.categoryId;
+
+// 分页参数
+const currentPage = ref(1);
+const pageSize = ref(6);
 
 // 获取类别名称
 const currentCategoryName = computed(() => {
@@ -62,24 +75,42 @@ const currentCategoryName = computed(() => {
   return category ? category.name : "未知类别";
 });
 
+// 总文章数
+const totalArticles = computed(() => store.totalArticles);
+
 // 当组件挂载时，根据 categoryId 获取文章列表
 onMounted(async () => {
   if (store.categories.length === 0) {
     await store.fetchCategories();
   }
-  store.fetchArticlesByCategory(categoryId);
+  await store.fetchArticlesByCategory(
+    categoryId,
+    currentPage.value,
+    pageSize.value,
+  );
 });
 
 // 监听路由参数的变化
 watch(
-  () => route.params.categoryId,
+  () => router.params.categoryId,
   async (newCategoryId) => {
     if (store.categories.length === 0) {
       await store.fetchCategories();
     }
-    store.fetchArticlesByCategory(newCategoryId);
+    currentPage.value = 1; // 当类别变化时，重置当前页码
+    await store.fetchArticlesByCategory(
+      newCategoryId,
+      currentPage.value,
+      pageSize.value,
+    );
   },
 );
+
+// 监听当前页码的变化
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  store.fetchArticlesByCategory(categoryId, currentPage.value, pageSize.value);
+};
 
 // 阅读更多的功能
 const readMore = (id: number) => {

@@ -1,11 +1,9 @@
 <template>
   <div class="article-list">
+    <div v-if="loading">加载中...</div>
+    <div v-else-if="error">{{ error }}</div>
     <!-- 展示多个文章的列表 -->
-    <div
-      v-for="(article, index) in store.articles"
-      :key="index"
-      class="article-item"
-    >
+    <div v-for="(article, index) in articles" :key="index" class="article-item">
       <!-- 顶部部分，文章的头部信息，如标题、作者信息等 -->
       <div class="article-header">
         <h2>{{ article.title }}</h2>
@@ -35,25 +33,55 @@
         <button @click="readMore(article.id)">阅读更多</button>
       </div>
     </div>
+    <!-- 分页组件 -->
+    <Pagination
+      v-if="totalArticles > pageSize"
+      :totalItems="totalArticles"
+      :pageSize="pageSize"
+      :currentPage="currentPage"
+      @update:currentPage="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useArticleStore } from "@/stores";
+import { useArticleStore } from "@/stores/articleStore";
 import { useRouter } from "vue-router";
-import { onMounted } from "vue";
+import { onMounted, computed, ref } from "vue";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
+import Pagination from "@/components/home/Pagination.vue"; // 确保正确导入
 
 const store = useArticleStore();
 const router = useRouter();
-const { fetchArticles } = store;
 
-// 在组件挂载时调用 fetchArticles 方法
-onMounted(() => {
-  fetchArticles();
+// 分页参数
+const currentPage = ref(1);
+const pageSize = ref(6);
+
+// 获取文章列表
+const articles = computed(() => store.articles);
+const totalArticles = computed(() => store.totalArticles);
+const loading = computed(() => store.loading);
+const error = computed(() => store.error);
+
+// 当组件挂载时，获取文章列表
+onMounted(async () => {
+  await store.fetchArticles({
+    page: currentPage.value,
+    page_size: pageSize.value,
+  });
 });
 
-// 阅读更多的功能，可以自定义跳转或展示逻辑
+// 监听当前页码的变化
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  store.fetchArticles({
+    page: currentPage.value,
+    page_size: pageSize.value,
+  });
+};
+
+// 阅读更多的功能
 const readMore = (id: number) => {
   router.push({ name: "PostDetail", params: { id } });
 };

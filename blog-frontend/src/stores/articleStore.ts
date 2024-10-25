@@ -33,6 +33,8 @@ export const useArticleStore = defineStore(
     const searchResults = ref<Article[]>([]);
     const searchLoading = ref(false);
     const searchError = ref<string | null>(null);
+    const totalArticles = ref(0);
+    const totalSearchResults = ref(0);
 
     // 获取热门文章
     const fetchPopularPosts = async () => {
@@ -50,21 +52,18 @@ export const useArticleStore = defineStore(
     };
 
     // 获取文章列表
-    const fetchArticles = async (page = 1, pageSize = 6) => {
+    const fetchArticles = async (
+      params: { page?: number; page_size?: number } = {},
+    ) => {
       loading.value = true;
       error.value = null;
-
       try {
-        const response = await axiosInstance.get("/posts", {
-          params: {
-            page,
-            page_size: pageSize,
-          },
-        });
-        articles.value = response.data;
-      } catch (err) {
-        error.value = "获取文章失败";
-        console.error("获取文章失败:", err);
+        const response = await axiosInstance.get("/posts", { params });
+        articles.value = response.data.posts;
+        totalArticles.value = response.data.total;
+      } catch (err: any) {
+        error.value = "无法获取文章列表";
+        console.error("Error fetching articles:", err);
       } finally {
         loading.value = false;
       }
@@ -191,7 +190,7 @@ export const useArticleStore = defineStore(
       }
     };
 
-    const searchArticles = async (keyword: string, tag?: string) => {
+    const searchArticles = async (keyword: string, page = 1, pageSize = 10) => {
       searchLoading.value = true;
       searchError.value = null;
 
@@ -199,10 +198,12 @@ export const useArticleStore = defineStore(
         const response = await axiosInstance.get("/search", {
           params: {
             keyword,
-            tag,
+            page,
+            page_size: pageSize,
           },
         });
-        searchResults.value = response.data;
+        searchResults.value = response.data.posts;
+        totalSearchResults.value = response.data.total; // 保存总结果数
       } catch (err: any) {
         searchError.value = err.response?.data?.error || "搜索文章失败";
         console.error("Error searching articles:", err);
@@ -221,6 +222,8 @@ export const useArticleStore = defineStore(
       searchResults,
       searchLoading,
       searchError,
+      totalArticles,
+      totalSearchResults,
       // 方法
       fetchPopularPosts,
       fetchArticles,

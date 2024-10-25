@@ -6,6 +6,7 @@ export const useCategoryTagStore = defineStore("categoryTag", {
     categories: [] as { id: number; name: string }[],
     tags: [] as { id: number; name: string }[],
     articles: [] as any[],
+    totalArticles: 0,
     loading: false,
     error: null as string | null,
   }),
@@ -24,12 +25,23 @@ export const useCategoryTagStore = defineStore("categoryTag", {
       }
     },
 
-    async fetchArticlesByCategory(categoryId: number | string) {
+    async fetchArticlesByCategory(
+      categoryId: number | string,
+      page = 1,
+      pageSize = 6,
+    ) {
       try {
         const response = await axiosInstance.get(
           `/posts/category/${categoryId}`,
+          {
+            params: {
+              page,
+              page_size: pageSize,
+            },
+          },
         );
-        this.articles = response.data;
+        this.articles = response.data.posts;
+        this.totalArticles = response.data.total; // 保存总文章数
         this.error = null; // 重置错误信息
       } catch (error: any) {
         if (error.response && error.response.status === 404) {

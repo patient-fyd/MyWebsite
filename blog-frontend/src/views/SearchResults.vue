@@ -45,6 +45,15 @@
           <button @click="readMore(article.id)">阅读更多</button>
         </div>
       </div>
+
+      <!-- 分页组件 -->
+      <Pagination
+        v-if="totalResults > pageSize"
+        :totalItems="totalResults"
+        :pageSize="pageSize"
+        :currentPage="currentPage"
+        @update:currentPage="handlePageChange"
+      />
     </div>
 
     <!-- 如果没有搜索结果 -->
@@ -55,10 +64,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, watch } from "vue";
+import { onMounted, computed, watch, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleStore } from "@/stores/articleStore";
 import ArticleMeta from "@/components/common/ArticleMeta.vue";
+import Pagination from "@/components/home/Pagination.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -68,10 +78,18 @@ const keyword = computed(() => (route.query.keyword as string) || "");
 const results = computed(() => articleStore.searchResults);
 const loading = computed(() => articleStore.searchLoading);
 const error = computed(() => articleStore.searchError);
+const totalResults = computed(() => articleStore.totalSearchResults);
+
+const currentPage = ref(1);
+const pageSize = ref(6);
 
 const performSearch = () => {
   if (keyword.value) {
-    articleStore.searchArticles(keyword.value);
+    articleStore.searchArticles(
+      keyword.value,
+      currentPage.value,
+      pageSize.value,
+    );
   }
 };
 
@@ -79,8 +97,13 @@ onMounted(() => {
   performSearch();
 });
 
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  performSearch();
+};
+
 watch(
-  () => route.query.keyword,
+  () => [keyword.value, currentPage.value],
   () => {
     performSearch();
   },

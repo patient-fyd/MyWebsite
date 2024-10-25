@@ -113,41 +113,36 @@ func GetPosts(c *gin.Context) {
 
 	// 分页参数
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "6"))
 	offset := (page - 1) * pageSize
 
-	// 过滤参数
-	categoryID := c.Query("category_id")
-	tagID := c.Query("tag_id")
-	searchQuery := c.Query("search")
+	// 构建基本查询
+	baseQuery := db.Model(&models.Post{})
 
-	// 构建查询
-	query := db.Preload("Author").Preload("Category").Preload("Tags").
-		Offset(offset).Limit(pageSize).
-		Order("created_at desc") // 按创建时间倒序排序
-
-	// 应用过滤条件
-	if categoryID != "" {
-		query = query.Where("category_id = ?", categoryID)
-	}
-	if tagID != "" {
-		query = query.Joins("JOIN post_tags ON post_tags.post_id = posts.id").Where("post_tags.tag_id = ?", tagID)
-	}
-	if searchQuery != "" {
-		query = query.Where("title LIKE ? OR content LIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
-	}
-
-	// 执行查询
-	result := query.Find(&posts)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + result.Error.Error()})
+	// 获取符合条件的总记录数
+	var total int64
+	if err := baseQuery.Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章总数失败：" + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	// 查询分页数据
+	if err := baseQuery.Preload("Author").Preload("Category").Preload("Tags").
+		Offset(offset).Limit(pageSize).
+		Order("created_at desc").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + err.Error()})
+		return
+	}
+
+	// 返回数据
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+		"total": total,
+	})
 }
 
-// GetPostsByCategoryID 根据类别ID返回文章列表
+// GetPostsByCategoryID 根据类别ID返回文章列表，支持分页
 func GetPostsByCategoryID(c *gin.Context) {
 	var posts []models.Post
 	db := config.DB // 使用全局数据库连接
@@ -155,25 +150,46 @@ func GetPostsByCategoryID(c *gin.Context) {
 	// 获取类别ID
 	categoryID := c.Param("category_id")
 
-	// 构建查询，移除分页功能
-	query := db.Preload("Author").Preload("Category").Preload("Tags").
-		Where("category_id = ?", categoryID).
-		Order("created_at desc") // 按创建时间倒序排序
+	// 分页参数
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
 
-	// 执行查询
-	result := query.Find(&posts)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + result.Error.Error()})
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 6
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 构建基础查询
+	baseQuery := db.Model(&models.Post{}).Where("category_id = ?", categoryID)
+
+	// 获取符合条件的文章总数
+	var total int64
+	if err := baseQuery.Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章总数失败：" + err.Error()})
 		return
 	}
 
-	// 如果文章列表为空，返回404或一个提示信息
-	if len(posts) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "该类别下没有文章"})
+	// 查询分页数据
+	if err := baseQuery.Preload("Author").Preload("Category").Preload("Tags").
+		Offset(offset).Limit(pageSize).
+		Order("created_at desc").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	// 返回数据
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+		"total": total,
+	})
 }
 
 // GetPost 获取文章详情，包括文章内容、作者信息、评论等
@@ -288,7 +304,7 @@ func DeletePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "文章删除成功"})
 }
 
-// SearchPosts 根据标题、内容、标签进行搜索
+// SearchPosts 根据标题、内容、标签进行搜索，支持分页
 func SearchPosts(c *gin.Context) {
 	var posts []models.Post
 	db := config.DB
@@ -296,24 +312,58 @@ func SearchPosts(c *gin.Context) {
 	// 获取查询参数
 	keyword := c.Query("keyword") // 搜索的关键词（在标题、内容、摘要、标签中搜索）
 
-	query := db.Model(&models.Post{}).Preload("Author").Preload("Category").Preload("Tags")
+	// 分页参数
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
 
-	if keyword != "" {
-		keywordPattern := "%" + keyword + "%"
-
-		// 加入 LEFT JOIN，以便在 WHERE 子句中使用 tags.name
-		query = query.Joins("LEFT JOIN post_tags ON post_tags.post_id = posts.id").
-			Joins("LEFT JOIN tags ON tags.id = post_tags.tag_id").
-			Where("posts.title LIKE ? OR posts.content LIKE ? OR posts.summary LIKE ? OR tags.name LIKE ?",
-				keywordPattern, keywordPattern, keywordPattern, keywordPattern).
-			Group("posts.id")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
 	}
 
-	// 执行查询
-	if err := query.Find(&posts).Error; err != nil {
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 构建基本查询
+	baseQuery := db.Model(&models.Post{}).
+		Joins("LEFT JOIN post_tags ON post_tags.post_id = posts.id").
+		Joins("LEFT JOIN tags ON tags.id = post_tags.tag_id").
+		Preload("Author").
+		Preload("Category").
+		Preload("Tags").
+		Group("posts.id")
+
+	// 应用搜索条件
+	if keyword != "" {
+		keywordPattern := "%" + keyword + "%"
+		baseQuery = baseQuery.Where("posts.title LIKE ? OR posts.content LIKE ? OR posts.summary LIKE ? OR tags.name LIKE ?",
+			keywordPattern, keywordPattern, keywordPattern, keywordPattern)
+	}
+
+	// 获取符合条件的总记录数
+	var total int64
+	countQuery := baseQuery.Session(&gorm.Session{DryRun: true}).Count(&total)
+	countSQL := countQuery.Statement.SQL.String()
+	countVars := countQuery.Statement.Vars
+
+	// 手动执行计数查询
+	if err := db.Raw("SELECT COUNT(*) FROM ("+countSQL+") AS sub", countVars...).Scan(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取搜索结果总数失败：" + err.Error()})
+		return
+	}
+
+	// 查询分页数据
+	if err := baseQuery.Offset(offset).Limit(pageSize).Find(&posts).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "搜索文章失败：" + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+		"total": total,
+	})
 }
