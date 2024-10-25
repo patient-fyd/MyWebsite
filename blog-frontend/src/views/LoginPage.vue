@@ -24,8 +24,12 @@
     </form>
 
     <p class="register-link">
-      Don't have an account?
-      <router-link to="/register">Sign up</router-link>
+      还没有账号吗？
+      <router-link to="/register">注册</router-link>
+    </p>
+    <p class="resetPassword-link">
+      忘记密码了吗？
+      <router-link to="/reset-password">重置密码</router-link>
     </p>
   </div>
 </template>
@@ -107,15 +111,25 @@ button:hover {
   background-color: #47abef;
 }
 
+.resetPassword-link {
+  margin-top: 10px;
+}
 .register-link {
   margin-top: 10px;
 }
 
+.resetPassword-link a {
+  color: #8dc9e8;
+  text-decoration: none;
+}
 .register-link a {
   color: #8dc9e8;
   text-decoration: none;
 }
 
+.resetPassword-link a:hover {
+  text-decoration: underline;
+}
 .register-link a:hover {
   text-decoration: underline;
 }

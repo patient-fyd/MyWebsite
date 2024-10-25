@@ -173,6 +173,39 @@ export const useUserStore = defineStore("userStore", {
         this.loading = false;
       }
     },
+
+    // 请求重置密码邮件
+    async requestPasswordReset(email: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axiosInstance.post("/request-password-reset", {
+          email,
+        });
+        this.successMessage = response.data.message;
+      } catch (error: any) {
+        this.error = error.response?.data?.error || "请求失败";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 重置密码
+    async resetPassword(verificationCode: string, newPassword: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axiosInstance.post("/reset-password", {
+          verification_code: verificationCode,
+          new_password: newPassword,
+        });
+        this.successMessage = response.data.message;
+      } catch (error: any) {
+        this.error = error.response?.data?.error || "重置密码失败";
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 
   persist: {

@@ -43,6 +43,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("@/views/ChangePassword.vue"),
   },
   {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: () => import("@/views/ResetPassword.vue"),
+  },
+  {
     path: "/posts",
     name: "CreateArticle",
     component: () => import("@/views/CreateArticle.vue"),
