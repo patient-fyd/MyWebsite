@@ -1,20 +1,20 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/patient-fyd/blog-backend/config"
-	"github.com/patient-fyd/blog-backend/models"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/patient-fyd/blog-backend/config"
+	"github.com/patient-fyd/blog-backend/models"
 )
 
 // 获取用户的任务项目
 func GetProjects(c *gin.Context) {
 	var projects []models.Project
 	db := config.DB
-
-	userID := c.GetUint("userID") // 从上下文中获取用户ID
+	userID := c.GetUint("userID")
 
 	if err := db.Where("user_id = ?", userID).Find(&projects).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取大任务失败"})
@@ -151,6 +151,11 @@ func GetCheckIns(c *gin.Context) {
 	var checkIns []models.CheckIn
 	userID := c.GetUint("userID")
 	db := config.DB
+
+	projectID := c.Query("project_id")
+	if projectID != "" {
+		db = db.Where("project_id = ?", projectID)
+	}
 
 	if err := db.Where("user_id = ?", userID).Find(&checkIns).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取打卡记录失败"})

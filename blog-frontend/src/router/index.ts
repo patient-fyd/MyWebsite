@@ -58,6 +58,11 @@ const routes: Array<RouteRecordRaw> = [
     name: "SearchResults",
     component: () => import("@/views/SearchResults.vue"),
   },
+  {
+    path: "/study-task",
+    name: "StudyTask",
+    component: () => import("@/views/StudyTask.vue"),
+  },
 ];
 
 const router = createRouter({

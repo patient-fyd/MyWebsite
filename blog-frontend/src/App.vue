@@ -56,6 +56,7 @@ watch(
       path === "/register" ||
       path === "/change-password" ||
       path === "/posts" ||
+      name === "StudyTask" ||
       editMode === "true"; // 当 editMode 为 true 时全屏
   },
   { immediate: true },

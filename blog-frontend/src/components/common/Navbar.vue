@@ -19,7 +19,7 @@
           >
         </li>
         <li class="nav-item">
-          <router-link to="/plugin" exact-active-class="active"
+          <router-link to="/study-task" exact-active-class="active"
             >学习打卡</router-link
           >
         </li>
