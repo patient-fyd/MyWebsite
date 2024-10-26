@@ -1,35 +1,35 @@
 <template>
   <div class="register-container">
-    <h1>Register</h1>
+    <h1>注册</h1>
     <form @submit.prevent="onSubmit">
       <div class="form-group">
-        <label for="username">Username:</label>
+        <label for="username">用户名:</label>
         <input
           v-model="form.username"
           type="text"
           id="username"
-          placeholder="Enter your username"
+          placeholder="请输入你的用户名"
         />
       </div>
       <div class="form-group">
-        <label for="password">Password:</label>
+        <label for="password">密码：</label>
         <input
           v-model="form.password"
           type="password"
           id="password"
-          placeholder="Enter your password"
+          placeholder="请输入你的密码"
         />
       </div>
       <div class="form-group">
-        <label for="email">Email:</label>
+        <label for="email">邮箱:</label>
         <input
           v-model="form.email"
           type="email"
           id="email"
-          placeholder="Enter your email"
+          placeholder="请输入你的邮箱"
         />
       </div>
-      <button type="submit">Register</button>
+      <button type="submit">注册</button>
     </form>
   </div>
 </template>

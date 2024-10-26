@@ -1,23 +1,23 @@
 <template>
   <div class="login-container">
-    <h1>Login</h1>
+    <h1>登录</h1>
     <form @submit.prevent="onSubmit">
       <div class="form-group">
-        <label for="username">Username:</label>
+        <label for="username">用户名:</label>
         <input
           v-model="form.username"
           type="text"
           id="username"
-          placeholder="Enter your username"
+          placeholder="请输入你的用户名"
         />
       </div>
       <div class="form-group">
-        <label for="password">Password:</label>
+        <label for="password">密码：</label>
         <input
           v-model="form.password"
           type="password"
           id="password"
-          placeholder="Enter your password"
+          placeholder="请输入你的密码"
         />
       </div>
       <button type="submit">Login</button>
