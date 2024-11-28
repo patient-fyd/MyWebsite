@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/patient-fyd/blog-backend/config"
@@ -9,31 +10,67 @@ import (
 	"github.com/patient-fyd/blog-backend/models"
 )
 
-// CreateComment 添加评论
+// CreateComment 添加评论功能
 func CreateComment(c *gin.Context) {
-	var comment models.Comment
+
 	db := config.DB
-
-	// 绑定传入的 JSON 数据
-	if err := c.ShouldBindJSON(&comment); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的数据格式：" + err.Error()})
+	// 获取文章 ID
+	postID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 		return
 	}
 
-	// 检查用户是否已登录
-	if userIDInterface, exists := c.Get("user_id"); exists {
-		// 将 interface{} 类型的 userID 转换为 uint
-		userID := userIDInterface.(uint32)
-		comment.UserID = &userID // 为评论绑定登录用户的 ID
+	// 解析请求体
+	var input struct {
+		Content  string  `json:"content" binding:"required"` // 评论内容
+		ParentID *uint32 `json:"parent_id"`                  // 父评论ID（可选）
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	// 保存评论
+	// 检查文章是否存在
+	var post models.Post
+	if err := db.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// 检查父评论是否存在（如果指定了 ParentID）
+	if input.ParentID != nil {
+		var parentComment models.Comment
+		if err := db.First(&parentComment, *input.ParentID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Parent comment not found"})
+			return
+		}
+	}
+
+	// 获取用户 ID（匿名评论时为空）
+	var userID *uint32
+	if userIDRaw, exists := c.Get("userID"); exists {
+		uid := userIDRaw.(uint32)
+		userID = &uid
+	}
+
+	// 创建评论
+	comment := models.Comment{
+		PostID:   uint32(postID),
+		UserID:   userID,
+		Content:  input.Content,
+		ParentID: input.ParentID,
+	}
 	if err := db.Create(&comment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "添加评论失败：" + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create comment"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "评论添加成功"})
+	// 返回成功响应
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Comment created successfully",
+		"data":    comment,
+	})
 }
 
 // GetComments 获取指定文章的评论列表
