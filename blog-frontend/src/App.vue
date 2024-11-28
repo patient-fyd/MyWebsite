@@ -1,8 +1,12 @@
 <template>
   <div id="app">
-    <!-- 如果不是全屏页面，显示导航栏和目标视图 -->
-    <div v-if="!isFullScreenPage" class="header">
+    <!-- 导航栏始终显示 -->
+    <div class="header">
       <AppNavbar />
+    </div>
+
+    <!-- 如果不是全屏页面，显示目标视图 -->
+    <div v-if="!isFullScreenPage" class="goal-view">
       <GoalView />
     </div>
 
@@ -56,6 +60,7 @@ watch(
       path === "/register" ||
       path === "/change-password" ||
       path === "/posts" ||
+      path.startsWith("/readingNotes") || // 判断路径是否以 /readingNotes 开头
       name === "StudyTask" ||
       name === "ResetPassword" ||
       editMode === "true"; // 当 editMode 为 true 时全屏
@@ -85,6 +90,13 @@ body {
 
 .header {
   width: 100%;
+}
+
+.goal-view {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
 }
 
 /* Content 区域 */

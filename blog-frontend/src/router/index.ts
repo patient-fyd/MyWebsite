@@ -22,7 +22,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("@/views/Register.vue"),
   },
   {
-    path: "/learningRoute",
+    path: "/learning-route",
     name: "LearningRoute",
     component: () => import("@/views/GoLearningRoute.vue"),
   },
@@ -30,9 +30,10 @@ const routes: Array<RouteRecordRaw> = [
     path: "/posts/:id",
     name: "PostDetail",
     component: () => import("@/views/PostDetail.vue"),
+    props: true, // 确保传递 props
   },
   {
-    path: "/posts/:id",
+    path: "/posts/:id/edit",
     name: "EditArticle",
     component: () => import("@/views/EditArticle.vue"),
     props: true,
@@ -48,7 +49,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("@/views/ResetPassword.vue"),
   },
   {
-    path: "/posts",
+    path: "/posts/create",
     name: "CreateArticle",
     component: () => import("@/views/CreateArticle.vue"),
   },
@@ -67,6 +68,59 @@ const routes: Array<RouteRecordRaw> = [
     path: "/study-task",
     name: "StudyTask",
     component: () => import("@/views/StudyTask.vue"),
+  },
+  {
+    path: "/readingnotes",
+    name: "ReadingNotes",
+    component: () => import("@/views/ReadingNotes.vue"),
+    children: [
+      {
+        path: "", // 默认子路由，显示首页内容
+        name: "ReadingNotesDefault",
+        component: () => import("@/views/readingnotes/Home.vue"),
+      },
+      {
+        path: "home",
+        name: "ReadingNotesHome",
+        component: () => import("@/views/readingnotes/Home.vue"),
+      },
+      {
+        path: "books",
+        name: "ReadingNotesBooks",
+        component: () => import("@/views/readingnotes/Books.vue"),
+      },
+      {
+        path: "books/:id",
+        name: "ReadingNotesBookDetails",
+        component: () => import("@/views/readingnotes/BookDetails.vue"),
+        props: true,
+      },
+      {
+        path: "note-editor",
+        name: "ReadingNotesNoteEditor",
+        component: () => import("@/views/readingnotes/NoteEditor.vue"),
+      },
+      {
+        path: "thoughts",
+        name: "ReadingNotesThoughts",
+        component: () => import("@/views/readingnotes/Thoughts.vue"),
+      },
+      {
+        path: "purchase-list",
+        name: "ReadingNotesPurchaseList",
+        component: () => import("@/views/readingnotes/PurchaseList.vue"),
+      },
+      {
+        path: "reading-plan",
+        name: "ReadingNotesReadingPlan",
+        component: () => import("@/views/readingnotes/ReadingPlan.vue"),
+      },
+      {
+        path: "share",
+        name: "ReadingNotesShare",
+        component: () => import("@/views/readingnotes/Share.vue"),
+      },
+    ],
   },
 ];
 
