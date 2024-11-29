@@ -9,7 +9,7 @@
     <div class="category-header">
       <ul class="category-list">
         <li
-          v-for="(category, index) in categories"
+          v-for="category in categories"
           :key="category.id"
           class="category-item"
         >
@@ -32,7 +32,13 @@ import { useCategoryTagStore } from "@/stores/categoryTagStore";
 
 // 引入 store 获取分类数据
 const categoryTagStore = useCategoryTagStore();
-const categories = ref([]); // 用来存储分类数据
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+const categories = ref<Category[]>([]); // 添加类型注解
 
 // 获取分类数据并更新到前端
 onMounted(async () => {

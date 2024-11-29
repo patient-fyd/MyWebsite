@@ -62,23 +62,47 @@ import { useStudyTaskStore } from "@/stores/studyTaskStore";
 
 const store = useStudyTaskStore();
 
+const projects = ref([
+  // 这里添加项目数据
+  { id: 'project1', name: '项目1' },
+  { id: 'project2', name: '项目2' },
+  { id: 'project3', name: '项目3' }
+]);
+
 const days = [
-  { label: "以往未完成", key: "yesterday" },
-  { label: "今天", key: "today" },
-  { label: "明天", key: "tomorrow" },
+  { label: "以往未完成", key: "yesterday" as const },
+  { label: "今天", key: "today" as const },
+  { label: "明天", key: "tomorrow" as const },
 ];
 
-const tasks = ref({
+interface Task {
+  id: number;
+  project_id: number;
+  name: string;
+  description?: string;
+  date: string;
+  completed: boolean;
+  day?: "yesterday" | "today" | "tomorrow";
+}
+
+const tasks = ref<{
+  yesterday: Task[];
+  today: Task[];
+  tomorrow: Task[];
+}>({
   yesterday: [],
   today: [],
   tomorrow: [],
 });
+
+const selectedProject = ref("");
 
 const fetchTasks = async () => {
   await store.fetchTasks();
   store.tasks.forEach((task) => {
     const dateKey = getDateKey(task.date);
     if (dateKey && tasks.value[dateKey]) {
+      (task as Task & { day?: "yesterday" | "today" | "tomorrow" }).day = dateKey;
       tasks.value[dateKey].push(task);
     }
   });
@@ -99,35 +123,35 @@ function getDateKey(dateString: string) {
         : null;
 }
 
-const createTask = async (dayKey) => {
+const createTask = async (dayKey: "yesterday" | "today" | "tomorrow") => {
   const taskName = prompt("请输入任务名称：");
   if (taskName) {
     await store.createTask({
       name: taskName,
       date:
         dayKey === "yesterday"
-          ? getYesterday()
+          ? getYesterday().toISOString().split('T')[0]
           : dayKey === "today"
-            ? new Date()
-            : getTomorrow(),
+            ? new Date().toISOString().split('T')[0]
+            : getTomorrow().toISOString().split('T')[0],
     });
     fetchTasks();
   }
 };
 
-const updateTask = async (task) => {
+const updateTask = async (task: Task) => {
   await store.updateTask(task);
   fetchTasks();
 };
 
-const deleteTask = async (taskId) => {
+const deleteTask = async (taskId: number) => {
   await store.deleteTask(taskId);
   fetchTasks();
 };
 
-const handleTaskCompletion = (task) => {
+const handleTaskCompletion = (task: Task) => {
   updateTask(task);
-  if (tasks.value[task.day].every((t) => t.completed)) {
+  if (task.day && tasks.value[task.day].every((t) => t.completed)) {
     alert(`${task.day} 的所有任务已完成！`);
   }
 };

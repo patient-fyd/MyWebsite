@@ -58,7 +58,7 @@
       v-model:isVisible="showPublishModal"
       :categories="categories"
       :tags="availableTags"
-      :initialCategoryID="selectedCategoryID"
+      :initialCategoryID="selectedCategoryID ?? undefined"
       :initialTags="selectedTags"
       :initialSummary="summary"
       @confirm="handleModalConfirm"
@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from "vue-router";
 import { ref, watch, onMounted, computed } from "vue";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import "highlight.js/styles/github.css";
@@ -172,15 +172,15 @@ const confirmToggleEditor = () => {
 };
 
 // Quill editor event handlers
-const onEditorBlur = (event) => {
+const onEditorBlur = (event: FocusEvent) => {
   console.log("Editor blurred!", event);
 };
 
-const onEditorFocus = (event) => {
+const onEditorFocus = (event: FocusEvent) => {
   console.log("Editor focused!", event);
 };
 
-const onEditorReady = (event) => {
+const onEditorReady = (event: CustomEvent) => {
   console.log("Editor is ready!", event);
 };
 
@@ -189,6 +189,10 @@ const handleModalConfirm = ({
   categoryID: newCategoryID,
   tags: newTags,
   summary: newSummary,
+}: {
+  categoryID: number;
+  tags: string[];
+  summary: string;
 }) => {
   selectedCategoryID.value = newCategoryID;
   selectedTags.value = newTags;

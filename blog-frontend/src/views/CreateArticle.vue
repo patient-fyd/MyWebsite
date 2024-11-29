@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { ref, watch, onMounted, computed } from "vue";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import "highlight.js/styles/github.css";
@@ -173,20 +173,25 @@ const confirmToggleEditor = () => {
 };
 
 // Quill editor event handlers
-const onEditorBlur = (event) => {
+const onEditorBlur = (event: FocusEvent) => {
   console.log("Editor blurred!", event);
 };
 
-const onEditorFocus = (event) => {
+const onEditorFocus = (event: FocusEvent) => {
   console.log("Editor focused!", event);
 };
 
-const onEditorReady = (event) => {
+const onEditorReady = (event: CustomEvent) => {
   console.log("Editor is ready!", event);
 };
 
 // Handle confirm event from SelectModal
-const handleModalConfirm = ({ categoryID, tags, summary }) => {
+interface ModalConfirmData {
+  categoryID: number;
+  tags: string[];
+  summary: string;
+}
+const handleModalConfirm = ({ categoryID, tags, summary }: ModalConfirmData) => {
   publishArticle(categoryID, tags, summary);
 };
 
@@ -196,7 +201,11 @@ const handleModalCancel = () => {
 };
 
 // 发布文章函数
-const publishArticle = async (categoryID, tags, summary) => {
+const publishArticle = async (
+  categoryID: number,
+  tags: string[],
+  summary: string
+) => {
   try {
     await articleStore.createArticle(
       title.value,
@@ -325,3 +334,4 @@ i {
   overflow: auto;
 }
 </style>
+

@@ -52,16 +52,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, PropType } from "vue";
 
 // 定义从父组件传递的 props
 const props = defineProps({
   categories: {
-    type: Array,
+    type: Array as PropType<Array<{ id: number; name: string }>>,
     required: true,
   },
   tags: {
-    type: Array,
+    type: Array as PropType<Array<{ id: number; name: string }>>,
     required: true,
   },
   isVisible: {
@@ -73,7 +73,7 @@ const props = defineProps({
     default: null,
   },
   initialTags: {
-    type: Array,
+    type: Array as PropType<string[]>,
     default: () => [],
   },
   initialSummary: {

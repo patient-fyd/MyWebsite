@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import { plugin as markdown } from "vite-plugin-markdown";
-import path from "path";
+import * as path from "path";
 
 export default defineConfig({
   plugins: [vue(), vueJsx(), markdown()],
@@ -19,4 +19,15 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia'],  // 第三方库单独打包
+          'editor': ['@vueup/vue-quill', 'quill'],   // 编辑器相关库打包
+          'utils': ['lodash', 'axios']
+        }
+      }
+    }
+  }
 });

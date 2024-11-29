@@ -34,7 +34,7 @@ function addPlan() {
   }
 }
 
-function markComplete(id) {
+function markComplete(id: number) {
   const plan = readingPlans.value.find((p) => p.id === id);
   if (plan) {
     plan.status = "已完成";

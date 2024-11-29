@@ -35,11 +35,13 @@ const navItems = [
 </script>
 
 <style scoped>
+/* 修改主容器背景色 */
 .reading-notes {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background-color: #f9f9f9; /* 整个界面的背景颜色 */
 }
 
 .main-layout {
@@ -54,13 +56,13 @@ const navItems = [
   left: 0;
   width: 200px;
   height: auto; /* 根据内容调整高度 */
-  background-color: #f9f9f9;
   border-right: 1px solid #ddd;
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transform: translateY(-50%); /* 垂直居中 */
   z-index: 1000;
+  background-color: #fff; /* 导航栏的背景颜色 */
 }
 
 .nav-link {
@@ -86,11 +88,10 @@ const navItems = [
 }
 
 .content {
-  margin-left: 200px; /* 留出左侧导航栏的宽度 */
-  margin-top: 60px; /* 留出顶级导航栏的高度 */
+  margin-left: 100px; /* 留出左侧导航栏的宽度 */
   flex: 1;
   padding: 20px;
   overflow-y: auto; /* 内容区域可滚动 */
-  background-color: #f9f9f9;
+  background-color: #f9f9f9; /* 保持与整体背景一致 */
 }
 </style>

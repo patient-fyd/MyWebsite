@@ -12,7 +12,7 @@
 
     <!-- 热门文章列表 -->
     <ul v-if="!loading && !error && posts && posts.length" class="post-list">
-      <li v-for="(post, index) in posts" :key="post.id" class="post-item">
+      <li v-for="post in posts" :key="post.id" class="post-item">
         <a :href="`/posts/${post.id}`" class="post-link">
           {{ post.title }}
         </a>
@@ -37,7 +37,7 @@ const articleStore = useArticleStore();
 const posts = computed(() => articleStore.popularPosts);
 const loading = computed(() => articleStore.loading);
 const error = computed(() => articleStore.error);
-let intervalId: number | undefined = undefined;
+let intervalId: NodeJS.Timeout | undefined = undefined;
 
 onMounted(() => {
   articleStore.fetchPopularPosts();

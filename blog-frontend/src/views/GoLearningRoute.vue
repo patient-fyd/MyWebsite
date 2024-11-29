@@ -17,8 +17,8 @@ const markdownContent = marked(markdownContentRaw);
 const htmlContent = ref("");
 
 // 初始化 highlight.js 并渲染 Markdown
-onMounted(() => {
-  htmlContent.value = markdownContent; // 设置 Markdown 内容
+onMounted(async () => {
+  htmlContent.value = await markdownContent; // 设置 Markdown 内容
   setTimeout(() => {
     document.querySelectorAll("pre code").forEach((block) => {
       highlight.highlightElement(block as HTMLElement); // 高亮代码块

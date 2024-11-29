@@ -19,6 +19,7 @@ interface Article {
     Username: string;
   };
   tags?: string[]; // 可选的 tags 字段
+  comments?: { id: number; content: string; }[]; // 添加 comments 属性
 }
 
 export const useArticleStore = defineStore(
@@ -82,7 +83,7 @@ export const useArticleStore = defineStore(
         const postIndex = popularPosts.value.findIndex(
           (post) => post.id === id,
         );
-        if (postIndex !== -1) {
+        if (postIndex !== -1 && articleDetail.value) {
           popularPosts.value[postIndex].views = articleDetail.value.views;
         }
       } catch (err) {
@@ -235,9 +236,6 @@ export const useArticleStore = defineStore(
     };
   },
   {
-    persist: {
-      enabled: true,
-    },
-    // 持久化配置
+    persist: true
   },
 );

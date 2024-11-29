@@ -209,6 +209,6 @@ export const useUserStore = defineStore("userStore", {
   },
 
   persist: {
-    enabled: true, // 使用持久化保存用户状态
+    storage: localStorage,
   },
 });

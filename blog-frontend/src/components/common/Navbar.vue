@@ -19,7 +19,7 @@
           >
         </li>
         <li class="nav-item">
-          <router-link to="/learningRoute" exact-active-class="active"
+          <router-link to="/learning-route" exact-active-class="active"
             >学习路线</router-link
           >
         </li>
