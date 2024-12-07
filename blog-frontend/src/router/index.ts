@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 import { authRoutes } from "./modules/auth";
-import { readingRoutes } from "./modules/reading";
+import { postRoutes } from "./modules/posts";
+import { studyRoutes } from "./modules/study";
+import { readingNotesRoutes } from "./modules/readingNotes";
+import { categoryRoutes } from "./modules/category";
 import { RoutePath } from "./constants";
 
 const routes: RouteRecordRaw[] = [
@@ -15,7 +18,19 @@ const routes: RouteRecordRaw[] = [
     }
   },
   ...authRoutes,
-  readingRoutes,
+  ...postRoutes,
+  ...studyRoutes,
+  readingNotesRoutes,
+  ...categoryRoutes,
+  {
+    path: RoutePath.SEARCH,
+    name: "SearchResults",
+    component: () => import("@/views/SearchResults.vue"),
+    meta: {
+      requiresAuth: false,
+      title: '搜索结果'
+    }
+  },
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
@@ -32,12 +47,9 @@ const router = createRouter({
   routes,
 });
 
-// 全局导航守卫
 router.beforeEach((to, _from, next) => {
-  // 设置页面标题
   document.title = `${to.meta.title} - 我的网站`;
   
-  // 处理需要登录的页面
   if (to.meta.requiresAuth) {
     // 检查登录状态的逻辑
   }

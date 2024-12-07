@@ -2,7 +2,7 @@ import type { RouteRecordRaw } from "vue-router";
 import { RoutePath } from "../constants";
 
 export const readingRoutes: RouteRecordRaw = {
-  path: RoutePath.READING.ROOT,
+  path: RoutePath.READING_NOTES.ROOT,
   name: "ReadingNotes",
   component: () => import("@/views/ReadingNotes.vue"),
   meta: {

@@ -1,29 +1,34 @@
 export const RoutePath = {
   HOME: '/',
-  LOGIN: '/login',
-  REGISTER: '/register',
+  AUTH: {
+    LOGIN: '/login',
+    REGISTER: '/register',
+    CHANGE_PASSWORD: '/change-password',
+    RESET_PASSWORD: '/reset-password'
+  },
   POSTS: {
     LIST: '/posts',
     DETAIL: '/posts/:id',
     EDIT: '/posts/:id/edit',
     CREATE: '/posts/create'
   },
-  AUTH: {
-    CHANGE_PASSWORD: '/change-password',
-    RESET_PASSWORD: '/reset-password'
+  CATEGORY: {
+    LIST: '/category/:categoryId'
   },
-  CATEGORY: '/category/:categoryId',
   SEARCH: '/search',
-  STUDY: '/study-task',
-  READING: {
-    ROOT: '/reading',
-    HOME: '/reading/home',
-    BOOKS: '/reading/books',
-    BOOK_DETAIL: '/reading/books/:id',
-    NOTE_EDITOR: '/reading/note-editor',
-    THOUGHTS: '/reading/thoughts',
-    PURCHASE: '/reading/purchase-list',
-    PLAN: '/reading/reading-plan',
-    SHARE: '/reading/share'
+  STUDY: {
+    TASK: '/study-task',
+    LEARNING_ROUTE: '/learning-route'
+  },
+  READING_NOTES: {
+    ROOT: '/readingnotes',
+    HOME: '/readingnotes/home',
+    BOOKS: '/readingnotes/books',
+    BOOK_DETAIL: '/readingnotes/books/:id',
+    NOTE_EDITOR: '/readingnotes/note-editor',
+    THOUGHTS: '/readingnotes/thoughts',
+    PURCHASE_LIST: '/readingnotes/purchase-list',
+    READING_PLAN: '/readingnotes/reading-plan',
+    SHARE: '/readingnotes/share'
   }
 } as const; 
