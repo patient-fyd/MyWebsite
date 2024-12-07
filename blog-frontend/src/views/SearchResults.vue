@@ -39,7 +39,8 @@
           <p>
             标签:
             <span v-for="(tag, tagIndex) in article.tags ?? []" :key="tagIndex">
-              {{ tag }}{{ tagIndex < (article.tags?.length ?? 0) - 1 ? ", " : "" }}
+              {{ tag
+              }}{{ tagIndex < (article.tags?.length ?? 0) - 1 ? ", " : "" }}
             </span>
           </p>
           <button @click="readMore(article.id)">阅读更多</button>
@@ -67,8 +68,8 @@
 import { onMounted, computed, watch, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleStore } from "@/stores/articleStore";
-import ArticleMeta from "@/components/common/ArticleMeta.vue";
-import Pagination from "@/components/home/Pagination.vue";
+import ArticleMeta from "@/components/article/ArticleMeta.vue";
+import Pagination from "@/components/common/Pagination.vue";
 
 const route = useRoute();
 const router = useRouter();

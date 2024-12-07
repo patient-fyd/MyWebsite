@@ -3,7 +3,7 @@
     <!-- 网站Logo -->
     <div class="logo">
       <router-link to="/">
-        <img src="@/assets/logo-no-background.png" alt="网站Logo" />
+        <img src="../../assets/images/logo-no-background.png" alt="网站Logo" />
       </router-link>
     </div>
 

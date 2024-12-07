@@ -1,9 +1,15 @@
 <template>
   <div class="article-list">
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">{{ error }}</div>
+    <h2>{{ currentCategoryName }}</h2>
+    <div v-if="store.error">
+      <p>{{ store.error }}</p>
+    </div>
     <!-- 展示多个文章的列表 -->
-    <div v-for="(article, index) in articles" :key="index" class="article-item">
+    <div
+      v-for="(article, index) in store.articles"
+      :key="index"
+      class="article-item"
+    >
       <!-- 顶部部分，文章的头部信息，如标题、作者信息等 -->
       <div class="article-header">
         <h2>{{ article.title }}</h2>
@@ -25,13 +31,14 @@
       <div class="article-footer">
         <p>
           标签:
-          <span v-for="(tag, tagIndex) in (article.tags || [])" :key="tagIndex"
-            >{{ tag }}{{ tagIndex < (article.tags || []).length - 1 ? ", " : "" }}</span
-          >
+          <span v-for="(tag, tagIndex) in article.tags" :key="tagIndex">
+            {{ tag.name }}{{ tagIndex < article.tags.length - 1 ? ", " : "" }}
+          </span>
         </p>
         <button @click="readMore(article.id)">阅读更多</button>
       </div>
     </div>
+
     <!-- 分页组件 -->
     <Pagination
       v-if="totalArticles > pageSize"
@@ -44,40 +51,66 @@
 </template>
 
 <script setup lang="ts">
-import { useArticleStore } from "@/stores/articleStore";
-import { useRouter } from "vue-router";
-import { onMounted, computed, ref } from "vue";
-import ArticleMeta from "@/components/common/ArticleMeta.vue";
-import Pagination from "@/components/home/Pagination.vue"; // 确保正确导入
+import { useCategoryTagStore } from "@/stores/categoryTagStore.ts";
+import { useRouter, useRoute } from "vue-router";
+import { onMounted, watch, computed, ref } from "vue";
+import ArticleMeta from "@/components/article/ArticleMeta.vue";
+import Pagination from "@/components/common/Pagination.vue"; // 确保正确导入
 
-const store = useArticleStore();
+const store = useCategoryTagStore();
 const router = useRouter();
+const route = useRoute();
+
+// 获取路由参数中的 categoryId
+const categoryId = route.params.categoryId;
 
 // 分页参数
 const currentPage = ref(1);
 const pageSize = ref(6);
 
-// 获取文章列表
-const articles = computed(() => store.articles);
-const totalArticles = computed(() => store.totalArticles);
-const loading = computed(() => store.loading);
-const error = computed(() => store.error);
-
-// 当组件挂载时，获取文章列表
-onMounted(async () => {
-  await store.fetchArticles({
-    page: currentPage.value,
-    page_size: pageSize.value,
-  });
+// 获取类别名称
+const currentCategoryName = computed(() => {
+  const category = store.categories.find(
+    (cat) => String(cat.id) === String(categoryId),
+  );
+  return category ? category.name : "未知类别";
 });
+
+// 总文章数
+const totalArticles = computed(() => store.totalArticles);
+
+// 当组件挂载时，根据 categoryId 获取文章列表
+onMounted(async () => {
+  if (store.categories.length === 0) {
+    await store.fetchCategories();
+  }
+  await store.fetchArticlesByCategory(
+    categoryId,
+    currentPage.value,
+    pageSize.value,
+  );
+});
+
+// 监听路由参数的变化
+watch(
+  () => route.params.categoryId,
+  async (newCategoryId) => {
+    if (store.categories.length === 0) {
+      await store.fetchCategories();
+    }
+    currentPage.value = 1; // 当类别变化时，重置当前页码
+    await store.fetchArticlesByCategory(
+      newCategoryId,
+      currentPage.value,
+      pageSize.value,
+    );
+  },
+);
 
 // 监听当前页码的变化
 const handlePageChange = (page: number) => {
   currentPage.value = page;
-  store.fetchArticles({
-    page: currentPage.value,
-    page_size: pageSize.value,
-  });
+  store.fetchArticlesByCategory(categoryId, currentPage.value, pageSize.value);
 };
 
 // 阅读更多的功能
@@ -87,6 +120,10 @@ const readMore = (id: number) => {
 </script>
 
 <style scoped>
+h2 {
+  text-align: center;
+  margin: 0;
+}
 .article-list {
   padding-bottom: 20px;
   padding-top: 20px;

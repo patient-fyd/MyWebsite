@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SearchBar from "@/components/common/SearchBar.vue";
 import PopularPosts from "@/components/common/PopularPosts.vue";
-import CategoryFilter from "@/components/common/CategoryFilter.vue";
+import CategoryFilter from "@/components/category/CategoryFilter.vue";
 import TagFilter from "@/components/common/TagFilter.vue";
 import OtherActions from "@/components/common/OtherActions.vue";
 // 确保组件加载

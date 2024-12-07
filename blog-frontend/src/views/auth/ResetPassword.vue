@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore"; // 确保引入正确
+import { useUserStore } from "@/stores/userStore.ts"; // 确保引入正确
 
 const userStore = useUserStore();
 const router = useRouter();

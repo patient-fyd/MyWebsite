@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import CategoryPosts from "@/components/CategoryList/CategoryList.vue";
+import CategoryPosts from "@/components/category/CategoryList.vue";
 </script>
 
 <style scoped></style>

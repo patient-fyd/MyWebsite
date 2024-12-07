@@ -4,7 +4,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Home",
-    component: () => import("@/views/Home.vue"),
+    component: () => import("@/views/article/List.vue"),
   },
   {
     path: "/:pathMatch(.*)*", // 捕获所有未定义的路由
@@ -14,12 +14,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/views/LoginPage.vue"),
+    component: () => import("@/views/auth/LoginPage.vue"),
   },
   {
     path: "/register",
     name: "Register",
-    component: () => import("@/views/Register.vue"),
+    component: () => import("@/views/auth/Register.vue"),
   },
   {
     path: "/learning-route",
@@ -29,29 +29,29 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/posts/:id",
     name: "PostDetail",
-    component: () => import("@/views/PostDetail.vue"),
+    component: () => import("@/views/article/Detail.vue"),
     props: true, // 确保传递 props
   },
   {
     path: "/posts/:id/edit",
     name: "EditArticle",
-    component: () => import("@/views/EditArticle.vue"),
+    component: () => import("@/views/article/Edit.vue"),
     props: true,
   },
   {
     path: "/change-password",
     name: "ChangePassword",
-    component: () => import("@/views/ChangePassword.vue"),
+    component: () => import("@/views/auth/ChangePassword.vue"),
   },
   {
     path: "/reset-password",
     name: "ResetPassword",
-    component: () => import("@/views/ResetPassword.vue"),
+    component: () => import("@/views/auth/ResetPassword.vue"),
   },
   {
     path: "/posts/create",
     name: "CreateArticle",
-    component: () => import("@/views/CreateArticle.vue"),
+    component: () => import("@/views/article/Create.vue"),
   },
   {
     path: "/category/:categoryId",
@@ -67,58 +67,58 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/study-task",
     name: "StudyTask",
-    component: () => import("@/views/StudyTask.vue"),
+    component: () => import("@/views/study/StudyTask.vue"),
   },
   {
-    path: "/readingnotes",
+    path: "/reading",
     name: "ReadingNotes",
     component: () => import("@/views/ReadingNotes.vue"),
     children: [
       {
         path: "", // 默认子路由，显示首页内容
         name: "ReadingNotesDefault",
-        component: () => import("@/views/readingnotes/Home.vue"),
+        component: () => import("@/views/reading/Home.vue"),
       },
       {
         path: "home",
         name: "ReadingNotesHome",
-        component: () => import("@/views/readingnotes/Home.vue"),
+        component: () => import("@/views/reading/Home.vue"),
       },
       {
         path: "books",
         name: "ReadingNotesBooks",
-        component: () => import("@/views/readingnotes/Books.vue"),
+        component: () => import("@/views/reading/Books.vue"),
       },
       {
         path: "books/:id",
         name: "ReadingNotesBookDetails",
-        component: () => import("@/views/readingnotes/BookDetails.vue"),
+        component: () => import("@/views/reading/BookDetails.vue"),
         props: true,
       },
       {
         path: "note-editor",
         name: "ReadingNotesNoteEditor",
-        component: () => import("@/views/readingnotes/NoteEditor.vue"),
+        component: () => import("@/views/reading/NoteEditor.vue"),
       },
       {
         path: "thoughts",
         name: "ReadingNotesThoughts",
-        component: () => import("@/views/readingnotes/Thoughts.vue"),
+        component: () => import("@/views/reading/Thoughts.vue"),
       },
       {
         path: "purchase-list",
         name: "ReadingNotesPurchaseList",
-        component: () => import("@/views/readingnotes/PurchaseList.vue"),
+        component: () => import("@/views/reading/PurchaseList.vue"),
       },
       {
         path: "reading-plan",
         name: "ReadingNotesReadingPlan",
-        component: () => import("@/views/readingnotes/ReadingPlan.vue"),
+        component: () => import("@/views/reading/ReadingPlan.vue"),
       },
       {
         path: "share",
         name: "ReadingNotesShare",
-        component: () => import("@/views/readingnotes/Share.vue"),
+        component: () => import("@/views/reading/Share.vue"),
       },
     ],
   },

@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useCategoryTagStore } from "@/stores/categoryTagStore";
+import { useCategoryTagStore } from "@/stores/categoryTagStore.ts";
 
 // 引入 store 获取分类数据
 const categoryTagStore = useCategoryTagStore();

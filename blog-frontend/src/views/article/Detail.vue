@@ -26,8 +26,8 @@
 <script setup lang="ts">
 import { onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useArticleStore } from "@/stores/articleStore";
-import ArticleMeta from "@/components/common/ArticleMeta.vue";
+import { useArticleStore } from "@/stores/articleStore.ts";
+import ArticleMeta from "@/components/article/ArticleMeta.vue";
 
 // 导入 MdPreview 组件和样式
 import { MdPreview } from "md-editor-v3";

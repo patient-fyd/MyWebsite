@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore"; // 引入用户 store
+import { useUserStore } from "@/stores/userStore.ts"; // 引入用户 store
 
 const userStore = useUserStore(); // 使用 userStore
 const router = useRouter();

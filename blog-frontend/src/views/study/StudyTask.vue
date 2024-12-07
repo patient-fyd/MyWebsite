@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import TaskArea from "@/components/StudyTask/TaskArea.vue";
-import CalendarHeatmap from "@/components/StudyTask/CalendarHeatmap.vue";
+import TaskArea from "@/components/study/TaskArea.vue";
+import CalendarHeatmap from "@/components/study/CalendarHeatmap.vue";
 </script>
 
 <style scoped>

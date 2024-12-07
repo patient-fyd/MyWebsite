@@ -13,13 +13,13 @@
       </div>
 
       <div class="button-group">
-        <!-- 发布按钮 -->
-        <button @click="showPublishModal = true">发布</button>
+        <!-- 保存修改按钮 -->
+        <button @click="updatePost">保存修改</button>
         <!-- 切换编辑器按钮 -->
         <button @click="promptToggleEditor" class="toggle-button">
           <i class="fas fa-exchange-alt"></i>
         </button>
-        <router-link class="button-link" to="/">返回主页</router-link>
+        <router-link class="button-link" to="/public">返回主页</router-link>
       </div>
     </div>
 
@@ -58,6 +58,9 @@
       v-model:isVisible="showPublishModal"
       :categories="categories"
       :tags="availableTags"
+      :initialCategoryID="selectedCategoryID ?? undefined"
+      :initialTags="selectedTags"
+      :initialSummary="summary"
       @confirm="handleModalConfirm"
       @cancel="handleModalCancel"
     />
@@ -65,19 +68,20 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ref, watch, onMounted, computed } from "vue";
 import debounce from "lodash-es/debounce";
 import { MdEditor } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import "highlight.js/styles/github.css";
-import SelectModal from "@/components/createArticle/SelectModal.vue";
-import Modal from "@/components/createArticle/Modal.vue";
-import { useArticleStore } from "@/stores/articleStore";
-import { useCategoryTagStore } from "@/stores/categoryTagStore";
+import SelectModal from "@/components/article/SelectModal.vue";
+import Modal from "@/components/article/Modal.vue";
+import { useArticleStore } from "@/stores/articleStore.ts";
+import { useCategoryTagStore } from "@/stores/categoryTagStore.ts";
 import { QuillEditor } from "@vueup/vue-quill";
 
 const router = useRouter();
+const route = useRoute();
 const title = ref("");
 const markdownContent = ref("### 在这里开始你的 Markdown 编辑");
 const content = ref(""); // Content for Quill editor
@@ -88,39 +92,34 @@ const savingStatus = ref("");
 const articleStore = useArticleStore();
 const categoryTagStore = useCategoryTagStore();
 
-console.log(
-  "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高",
-);
+const postId = Number(route.params.id);
 
-// Fetch categories and tags when component mounts
+// 获取摘要等变量
+const summary = ref("");
+const selectedCategoryID = ref<number | null>(null);
+const selectedTags = ref<string[]>([]);
+
+// Fetch categories, tags, and post details when component mounts
 onMounted(async () => {
   await categoryTagStore.fetchCategories();
   await categoryTagStore.fetchTags();
+  await articleStore.fetchPostById(postId); // 传入 postId
+  const post = articleStore.articleDetail;
+  if (post) {
+    title.value = post.title;
+    if (isUsingQuill.value) {
+      content.value = post.content;
+    } else {
+      markdownContent.value = post.content;
+    }
+    summary.value = post.summary || "";
+    selectedCategoryID.value = post.category.id;
+    selectedTags.value = post.tags || [];
+  }
 });
 
 const categories = computed(() => categoryTagStore.categories);
 const availableTags = computed(() => categoryTagStore.tags);
-
-onMounted(async () => {
-  await categoryTagStore.fetchCategories();
-  await categoryTagStore.fetchTags();
-});
-
-// Retrieve saved editor state and content from localStorage
-onMounted(() => {
-  const savedEditorType = localStorage.getItem("isUsingQuill");
-  const savedTitle = localStorage.getItem("articleTitle");
-  const savedMarkdownContent = localStorage.getItem("markdownContent");
-  const savedQuillContent = localStorage.getItem("quillContent");
-
-  if (savedEditorType !== null) {
-    isUsingQuill.value = savedEditorType === "true";
-  }
-
-  if (savedTitle) title.value = savedTitle;
-  if (savedMarkdownContent) markdownContent.value = savedMarkdownContent;
-  if (savedQuillContent) content.value = savedQuillContent;
-});
 
 // Quill editor options
 const editorOptions = ref({
@@ -186,13 +185,19 @@ const onEditorReady = (event: CustomEvent) => {
 };
 
 // Handle confirm event from SelectModal
-interface ModalConfirmData {
+const handleModalConfirm = ({
+  categoryID: newCategoryID,
+  tags: newTags,
+  summary: newSummary,
+}: {
   categoryID: number;
   tags: string[];
   summary: string;
-}
-const handleModalConfirm = ({ categoryID, tags, summary }: ModalConfirmData) => {
-  publishArticle(categoryID, tags, summary);
+}) => {
+  selectedCategoryID.value = newCategoryID;
+  selectedTags.value = newTags;
+  summary.value = newSummary;
+  confirmUpdatePost();
 };
 
 // Handle cancel event from SelectModal
@@ -200,37 +205,33 @@ const handleModalCancel = () => {
   showPublishModal.value = false;
 };
 
-// 发布文章函数
-const publishArticle = async (
-  categoryID: number,
-  tags: string[],
-  summary: string
-) => {
+// 更新文章函数
+const confirmUpdatePost = async () => {
   try {
-    await articleStore.createArticle(
+    await articleStore.updatePostById(
+      postId,
       title.value,
       isUsingQuill.value ? content.value : markdownContent.value,
-      summary,
-      categoryID,
-      tags,
+      summary.value,
+      selectedCategoryID.value!,
+      selectedTags.value,
     );
 
     // 检查是否有错误
     if (articleStore.error) {
       // 显示错误信息
-      alert(`发布文章失败：${articleStore.error}`);
+      alert(`更新文章失败：${articleStore.error}`);
     } else {
-      // 成功发布文章后执行重定向
-      await router.push("/"); // 重定向到主页
+      // 成功更新文章后执行重定向
+      await router.push({ name: "PostDetail", params: { id: postId } });
 
       // 重置表单和状态
       title.value = "";
       markdownContent.value = "### 在这里开始你的 Markdown 编辑";
       content.value = "";
-      // 移除对参数的赋值操作
-      // categoryID = 1;
-      // tags = [];
-      // summary = "";
+      selectedCategoryID.value = null;
+      selectedTags.value = [];
+      summary.value = "";
       showPublishModal.value = false;
 
       // 清空 localStorage 中的草稿内容
@@ -242,12 +243,16 @@ const publishArticle = async (
       localStorage.removeItem("summary");
     }
   } catch (error) {
-    console.error("发布文章失败", error);
-    alert("发布文章失败，请重试。");
+    console.error("更新文章失败", error);
+    alert("更新文章失败，请重试。");
   }
 };
-</script>
 
+// 保存修改按钮点击事件
+const updatePost = () => {
+  showPublishModal.value = true;
+};
+</script>
 <style scoped>
 html,
 body {
@@ -334,4 +339,3 @@ i {
   overflow: auto;
 }
 </style>
-

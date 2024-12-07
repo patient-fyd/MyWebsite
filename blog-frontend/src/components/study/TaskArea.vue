@@ -16,7 +16,7 @@
           {{ project.name }}
         </option>
       </select>
-      <router-link to="/" class="button-link">返回首页</router-link>
+      <router-link to="/public" class="button-link">返回首页</router-link>
     </div>
 
     <!-- 任务区域 -->
@@ -58,15 +58,15 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useStudyTaskStore } from "@/stores/studyTaskStore";
+import { useStudyTaskStore } from "@/stores/studyTaskStore.ts";
 
 const store = useStudyTaskStore();
 
 const projects = ref([
   // 这里添加项目数据
-  { id: 'project1', name: '项目1' },
-  { id: 'project2', name: '项目2' },
-  { id: 'project3', name: '项目3' }
+  { id: "project1", name: "项目1" },
+  { id: "project2", name: "项目2" },
+  { id: "project3", name: "项目3" },
 ]);
 
 const days = [
@@ -102,7 +102,8 @@ const fetchTasks = async () => {
   store.tasks.forEach((task) => {
     const dateKey = getDateKey(task.date);
     if (dateKey && tasks.value[dateKey]) {
-      (task as Task & { day?: "yesterday" | "today" | "tomorrow" }).day = dateKey;
+      (task as Task & { day?: "yesterday" | "today" | "tomorrow" }).day =
+        dateKey;
       tasks.value[dateKey].push(task);
     }
   });
@@ -130,10 +131,10 @@ const createTask = async (dayKey: "yesterday" | "today" | "tomorrow") => {
       name: taskName,
       date:
         dayKey === "yesterday"
-          ? getYesterday().toISOString().split('T')[0]
+          ? getYesterday().toISOString().split("T")[0]
           : dayKey === "today"
-            ? new Date().toISOString().split('T')[0]
-            : getTomorrow().toISOString().split('T')[0],
+            ? new Date().toISOString().split("T")[0]
+            : getTomorrow().toISOString().split("T")[0],
     });
     fetchTasks();
   }

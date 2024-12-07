@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import ArticleList from "@/components/home/ArticleList.vue";
+import ArticleList from "@/components/article/ArticleList.vue";
 </script>
 
 <style scoped></style>

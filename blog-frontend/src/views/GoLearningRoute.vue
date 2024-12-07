@@ -10,7 +10,7 @@ import { marked } from "marked";
 import { ref, onMounted } from "vue";
 import highlight from "highlight.js";
 import "highlight.js/styles/github.css";
-import markdownContentRaw from "@/assets/LearningRouteMD/GoLearningRoute.md?raw";
+import markdownContentRaw from "@/assets/markdown/LearningRouteMD/GoLearningRoute.md?raw";
 
 const markdownContent = marked(markdownContentRaw);
 
