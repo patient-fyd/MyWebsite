@@ -66,7 +66,7 @@
                 >
               </li>
 
-              <!-- 当用户未登录时，显示登录和注册选项 -->
+              <!-- 当用户未登录时，显示登录和注��选项 -->
               <li v-if="!isAuthenticated" class="dropdown-item">
                 <router-link to="/login">登录</router-link>
               </li>
@@ -82,12 +82,25 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
-import { useUserStore } from "@/stores"; // 引入用户 store
+import { ref, computed, onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore"; // 直接从 userStore 导入
 import { useRouter } from "vue-router"; // 引入路由
 
 // 获取用户 store 和登录状态
 const userStore = useUserStore();
+
+// 添加初始化逻辑
+onMounted(async () => {
+  // 如果本地存储中有 token，尝试获取用户信息
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      await userStore.fetchUserInfo();
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+    }
+  }
+});
 
 // 使用 computed 来确保 isAuthenticated 是响应式的
 const isAuthenticated = computed(() => userStore.isAuthenticated);

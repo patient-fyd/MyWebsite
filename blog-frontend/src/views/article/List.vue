@@ -4,8 +4,8 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-import ArticleList from "@/components/article/ArticleList.vue";
+<script setup lang="ts">
+import ArticleList from "@/components/article/ArticleList.vue"
 </script>
 
 <style scoped></style>

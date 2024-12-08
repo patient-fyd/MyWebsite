@@ -32,10 +32,13 @@ export const useUserStore = defineStore("userStore", () => {
 
     try {
       const userData = await userService.register(username, password, email);
-      user.value = userData;
-      setSuccess("注册成功");
+      if (userData) {
+        user.value = userData;
+        setSuccess("注册成功");
+      }
     } catch (err: any) {
       setError(err.message);
+      throw err;
     } finally {
       loading.value = false;
     }
@@ -47,11 +50,15 @@ export const useUserStore = defineStore("userStore", () => {
 
     try {
       const response = await userService.login(username, password);
-      user.value = response.user;
-      setSuccess("登录成功");
+      
+      // 登录成功后立即获取用户信息
       await fetchUserInfo();
+      
+      setSuccess(response.message || "登录成功");
+      return response;
     } catch (err: any) {
       setError(err.message);
+      throw err;
     } finally {
       loading.value = false;
     }
@@ -59,7 +66,9 @@ export const useUserStore = defineStore("userStore", () => {
 
   const fetchUserInfo = async () => {
     try {
-      user.value = await userService.getUserInfo();
+      const userData = await userService.getUserInfo();
+      user.value = userData; // 确保这里正确设置了用户数据
+      return userData;
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -93,7 +102,7 @@ export const useUserStore = defineStore("userStore", () => {
 
     try {
       const response = await userService.requestPasswordReset(email);
-      setSuccess(response.message);
+      setSuccess(response.message || "重置密码请求已发送");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -107,7 +116,7 @@ export const useUserStore = defineStore("userStore", () => {
 
     try {
       const response = await userService.resetPassword(verificationCode, newPassword);
-      setSuccess(response.message);
+      setSuccess(response.message || "密码重置成功");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -134,7 +143,5 @@ export const useUserStore = defineStore("userStore", () => {
     resetPassword,
   };
 }, {
-  persist: {
-    storage: localStorage,
-  },
+  persist: true
 });

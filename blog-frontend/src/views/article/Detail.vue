@@ -5,18 +5,16 @@
       <ArticleMeta
         :author="post.author"
         :createdAt="post.created_at"
-        :commentsCount="post.comments ? post.comments.length : 0"
+        :commentsCount="post.comments?.length ?? 0"
         :views="post.views"
       />
     </div>
     <div class="article-content">
-      <!-- 使用 MdPreview 渲染 Markdown 内容 -->
       <MdPreview v-model="post.content" />
     </div>
-    <!-- 在文章内容底部添加按钮 -->
     <div class="article-actions">
-      <button @click="editPost">修改文章</button>
-      <button @click="deletePost">删除文章</button>
+      <button @click="handleEdit">修改文章</button>
+      <button @click="handleDelete">删除文章</button>
     </div>
   </div>
   <p v-else-if="loading">加载中...</p>
@@ -24,52 +22,56 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useArticleStore } from "@/stores/articleStore.ts";
-import ArticleMeta from "@/components/article/ArticleMeta.vue";
+import { onMounted, ref } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { articleService } from "@/services/modules/articleService"
+import type { Article } from "@/services/types/article"
+import ArticleMeta from "@/components/article/ArticleMeta.vue"
+import { MdPreview } from "md-editor-v3"
+import "md-editor-v3/lib/style.css"
+import "highlight.js/styles/github.css"
 
-// 导入 MdPreview 组件和样式
-import { MdPreview } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
-import "highlight.js/styles/github.css";
+const route = useRoute()
+const router = useRouter()
+const post = ref<Article | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
 
-const route = useRoute();
-const router = useRouter();
-const postStore = useArticleStore();
-
-const post = computed(() => postStore.articleDetail);
-const loading = computed(() => postStore.loading);
-const error = computed(() => postStore.error);
-
-// 获取文章详情的方法
 const fetchPost = async (id: number) => {
-  await postStore.fetchPostById(id);
-};
-
-// 在组件挂载时加载文章详情
-onMounted(() => {
-  const postId = Number(route.params.id);
-  fetchPost(postId);
-});
-
-// 删除文章
-const deletePost = async () => {
-  if (confirm("确定要删除这篇文章吗？")) {
-    await postStore.deletePostById(post.value!.id);
-    // 删除成功后跳转到主页
-    await router.push("/");
+  loading.value = true
+  try {
+    post.value = await articleService.getArticleById(id)
+  } catch (err: any) {
+    error.value = err.message
+  } finally {
+    loading.value = false
   }
-};
+}
 
-// 修改文章
-const editPost = () => {
+const handleDelete = async () => {
+  if (!post.value || !confirm("确定要删除这篇文章吗？")) return
+  
+  try {
+    await articleService.deleteArticle(post.value.id)
+    await router.push("/")
+  } catch (err: any) {
+    error.value = err.message
+  }
+}
+
+const handleEdit = () => {
+  if (!post.value) return
   router.push({
     name: "EditArticle",
-    params: { id: post.value!.id },
-    query: { edit: "true" },
-  });
-};
+    params: { id: post.value.id },
+    query: { edit: "true" }
+  })
+}
+
+onMounted(() => {
+  const postId = Number(route.params.id)
+  fetchPost(postId)
+})
 </script>
 
 <style scoped>

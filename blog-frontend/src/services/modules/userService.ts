@@ -1,41 +1,76 @@
 import { userApi } from "../api/userApi";
-import type { User } from "@/services/types/user.d.ts";
+import type { User, LoginResponse } from "@/services/types/user.d.ts";
+import { TokenService } from "@/services/auth/tokenService";
 
 export const userService = {
   async register(username: string, password: string, email: string) {
     try {
       const { data } = await userApi.register({ username, password, email });
+      if (data.error) {
+        throw new Error(data.error);
+      }
       return data.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "注册失败");
+      const errorMessage = error.response?.data?.error || 
+                          error.message || 
+                          "注册失败，该用户名可能已被使用";
+      throw new Error(errorMessage);
     }
   },
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string): Promise<LoginResponse> {
     try {
-      const { data } = await userApi.login({ username, password });
-      const { access_token, refresh_token } = data.data;
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      return data.data;
+      const response = await userApi.login({ username, password });
+      console.log('API response:', response);
+      
+      const loginData = response.data;
+      if (!loginData.access_token || !loginData.refresh_token) {
+        console.error('Invalid login response:', loginData);
+        throw new Error("登录响应缺少必要的认证信息");
+      }
+
+      TokenService.setToken(loginData.access_token);
+      TokenService.setRefreshToken(loginData.refresh_token);
+      
+      return loginData;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "登录失败");
+      console.error('Login error details:', {
+        error,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "登录失败";
+      throw new Error(errorMessage);
     }
   },
 
   async getUserInfo(): Promise<User> {
     try {
       const { data } = await userApi.getUserInfo();
+      console.log('GetUserInfo response:', data);
+      
+      if (!data.data) {
+        console.error('Invalid user data format:', data);
+        throw new Error("返回的用户数据格式不正确");
+      }
+
+      const userData = data.data;
       return {
-        id: data.data.id,
-        username: data.data.username,
-        email: data.data.email,
-        role: data.data.role,
-        createdAt: data.data.createdAt,
-        updatedAt: data.data.updatedAt,
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
+        created_at: userData.created_at,
+        updated_at: userData.updated_at
       };
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "获取用户信息失败");
+      console.error('获取用户信息错误:', error.response || error);
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "获取用户信息失败";
+      throw new Error(errorMessage);
     }
   },
 

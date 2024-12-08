@@ -1,6 +1,9 @@
 <template>
   <div class="login-container">
     <h1>登录</h1>
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
     <form @submit.prevent="onSubmit">
       <div class="form-group">
         <label for="username">用户名:</label>
@@ -20,7 +23,9 @@
           placeholder="请输入你的密码"
         />
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" :disabled="isLoading">
+        {{ isLoading ? '登录中...' : '登录' }}
+      </button>
     </form>
 
     <p class="register-link">
@@ -35,38 +40,47 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/userStore.ts"; // 引入用户 store
+import { useUserStore } from "@/stores/userStore.ts";
 
-const userStore = useUserStore(); // 使用 userStore
+const userStore = useUserStore();
 const router = useRouter();
+const isLoading = ref(false);
+const errorMessage = ref("");
 
 const form = reactive({
   username: "",
   password: "",
-  email: "",
 });
 
-// 提交登录表单
 const onSubmit = async () => {
   if (!form.username || !form.password) {
-    alert("Please fill in all fields.");
+    errorMessage.value = "请填写所有必填项";
     return;
   }
 
   try {
-    // 调用 store 中的 login 方法
-    await userStore.login(form.username, form.password);
-
-    if (!userStore.error) {
-      alert("Login successful!");
-      router.push("/"); // 登录成功后跳转到主页
+    isLoading.value = true;
+    errorMessage.value = "";
+    
+    const response = await userStore.login(form.username.trim(), form.password);
+    console.log('Login response:', response);
+    
+    if (userStore.isAuthenticated) {
+      router.push("/");
     } else {
-      alert(userStore.error); // 显示登录失败原因
+      errorMessage.value = "登录失败，请重试";
     }
-  } catch (error) {
-    console.error("Error during login:", error);
+  } catch (error: any) {
+    console.error("登录错误详情:", {
+      error,
+      response: error.response?.data,
+      message: error.message
+    });
+    errorMessage.value = error.message || "登录时发生错误，请稍后重试";
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
@@ -132,5 +146,19 @@ button:hover {
 }
 .register-link a:hover {
   text-decoration: underline;
+}
+
+.error-message {
+  color: #ff4444;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #ffe6e6;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 </style>

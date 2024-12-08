@@ -122,7 +122,18 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	// 返回格式化的用户信息
+	c.JSON(http.StatusOK, gin.H{
+		"message": "获取用户信息成功",
+		"data": gin.H{
+			"id":         user.ID,
+			"username":   user.Username,
+			"email":      user.Email,
+			"role":       user.Role,
+			"created_at": user.CreatedAt,
+			"updated_at": user.UpdatedAt,
+		},
+	})
 }
 
 // UpdateUser 更新用户信息

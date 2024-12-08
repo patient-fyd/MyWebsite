@@ -21,8 +21,8 @@
     <select id="tag-select" v-model="selectedTag">
       <option disabled value="">请选择标签</option>
       <!-- 添加占位符选项 -->
-      <option v-for="tag in tags" :key="tag.id" :value="tag.name">
-        {{ tag.name }}
+      <option v-for="tag in tags" :key="tag" :value="tag">
+        {{ tag }}
       </option>
     </select>
     <div class="tags">
@@ -52,35 +52,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, PropType } from "vue";
+import { ref, watch } from "vue";
 
 // 定义从父组件传递的 props
-const props = defineProps({
-  categories: {
-    type: Array as PropType<Array<{ id: number; name: string }>>,
-    required: true,
-  },
-  tags: {
-    type: Array as PropType<Array<{ id: number; name: string }>>,
-    required: true,
-  },
-  isVisible: {
-    type: Boolean,
-    default: true,
-  },
-  initialCategoryID: {
-    type: Number,
-    default: null,
-  },
-  initialTags: {
-    type: Array as PropType<string[]>,
-    default: () => [],
-  },
-  initialSummary: {
-    type: String,
-    default: "",
-  },
-});
+const props = defineProps<{
+  categories: { id: number; name: string }[]
+  tags: string[]
+  isVisible: boolean
+  initialCategoryID: number | null
+  initialTags: string[]
+  initialSummary: string
+}>();
 
 const emit = defineEmits(["confirm", "cancel", "update:isVisible"]);
 
