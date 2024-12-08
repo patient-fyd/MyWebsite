@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -9,58 +10,58 @@ import (
 	"github.com/patient-fyd/blog-backend/config"
 )
 
+// ParseToken 解析 JWT token
+func ParseToken(tokenString string) (*jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return config.JwtSecret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return &claims, nil
+	}
+
+	return nil, jwt.ErrInvalidKey
+}
+
 // AuthMiddleware 是身份验证中间件
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "未提供认证令牌"})
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "未提供认证信息",
+			})
 			c.Abort()
 			return
 		}
 
-		// 确保 Authorization 头部的格式是 "Bearer token"
-		if len(tokenString) <= len("Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证格式"})
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的认证格式",
+			})
 			c.Abort()
 			return
 		}
 
-		// 移除 "Bearer " 前缀
-		tokenString = tokenString[len("Bearer "):]
-
-		// 解析 JWT
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return config.JwtSecret, nil
-		})
-
-		// 检查解析 JWT 时是否发生错误
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证令牌"})
+		claims, err := ParseToken(parts[1])
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的认证令牌",
+			})
 			c.Abort()
 			return
 		}
 
-		// 获取 JWT 中的声明信息
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "无效的认证令牌"})
-			c.Abort()
-			return
-		}
-
-		// 将用户信息存入上下文
-		userID, ok := claims["user_id"].(float64)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "令牌中缺少用户ID"})
-			c.Abort()
-			return
-		}
-
-		// 设置 userID 到上下文
-		c.Set("userID", uint(userID))
-
-		// 继续处理下一个中间件/路由
+		c.Set("userID", uint((*claims)["user_id"].(float64)))
+		c.Set("role", (*claims)["role"].(string))
 		c.Next()
 	}
 }

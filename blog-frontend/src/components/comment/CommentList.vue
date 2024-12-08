@@ -188,14 +188,21 @@ const submitReply = async (parentId: number) => {
 
 // 删除评论
 const deleteComment = async (commentId: number) => {
-  if (!confirm('确定要删除这条评论吗？')) return
-  
+  if (!isAuthenticated.value) {
+    alert('请先登录后再进行操作');
+    return;
+  }
+
+  if (!confirm('确定要删除这条评论吗？')) {
+    return;
+  }
+
   try {
-    const response = await commentApi.deleteComment(commentId)
-    console.log('删除评论响应:', response)
-    await fetchComments()
-  } catch (error) {
-    console.error('删除评论失败:', error)
+    await commentApi.deleteComment(commentId);
+    comments.value = comments.value.filter(c => c.id !== commentId);
+  } catch (error: any) {
+    console.error('删除评论失败:', error);
+    alert(error.response?.data?.message || '删除评论失败');
   }
 }
 

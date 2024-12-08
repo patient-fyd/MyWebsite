@@ -157,28 +157,27 @@ func DeleteComment(c *gin.Context) {
 	// 获取评论
 	if err := db.Where("id = ?", commentID).First(&comment).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "评论未找到",
 			"code":    404,
+			"message": "评论未找到",
 		})
 		return
 	}
 
-	// 获取登录用户 ID
+	// 获取登录用户 ID 和角色
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "未授权",
 			"code":    401,
+			"message": "未授权",
 		})
 		return
 	}
 
-	// 获取用户角色
 	role, exists := c.Get("role")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "未授权",
 			"code":    401,
+			"message": "未授权",
 		})
 		return
 	}
@@ -186,11 +185,11 @@ func DeleteComment(c *gin.Context) {
 	// 检查用户是否是评论作者或管理员
 	uid := uint32(userID.(uint))
 	if comment.UserID == nil || *comment.UserID != uid {
-		// 如果不评论作者，检查是否是管理员
+		// 如果不是评论作者，检查是否是管理员
 		if role.(string) != "admin" {
 			c.JSON(http.StatusForbidden, gin.H{
-				"message": "没有权限删除此评论",
 				"code":    403,
+				"message": "没有权限删除此评论",
 			})
 			return
 		}
@@ -199,15 +198,15 @@ func DeleteComment(c *gin.Context) {
 	// 删除评论及其所有子评论
 	if err := db.Delete(&models.Comment{}, "id = ? OR parent_id = ?", commentID, commentID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "删除评论失败",
 			"code":    500,
+			"message": "删除评论失败",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "评论删除成功",
 		"code":    200,
+		"message": "评论删除成功",
 	})
 }
 

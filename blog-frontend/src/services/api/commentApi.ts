@@ -1,35 +1,24 @@
 import axiosInstance from '@/utils/axiosInstance'
-import type { 
-  CreateCommentData, 
-  CommentListResponse,
-  CommentResponse,
-  CommentActionResponse 
-} from '../types/comment'
+import type { CommentListResponse, CommentResponse, CommentActionResponse } from '../types/comment'
 
 export const commentApi = {
-  async getComments(postId: number) {
-    const response = await axiosInstance.get<CommentListResponse>(`/posts/${postId}/comments`)
-    console.log('API 获取评论响应:', response.data)
-    return response
+  // 获取评论列表
+  getComments(postId: number) {
+    return axiosInstance.get<CommentListResponse>(`/posts/${postId}/comments`);
   },
 
-  async createComment(postId: number, data: CreateCommentData) {
-    const response = await axiosInstance.post<CommentResponse>(`/posts/${postId}/comments`, data)
-    console.log('API 创建评论响应:', response.data)
-    return response
+  // 发表评论
+  createComment(postId: number, data: { content: string; parent_id?: number }) {
+    return axiosInstance.post<CommentResponse>(`/posts/${postId}/comments`, data);
   },
 
-  async reactToComment(commentId: number, action: 'like' | 'dislike') {
-    const response = await axiosInstance.post<CommentActionResponse>(
-      `/comments/${commentId}/${action}`
-    )
-    console.log('API 点赞/点踩响应:', response.data)
-    return response
+  // 删除评论
+  deleteComment(commentId: number) {
+    return axiosInstance.delete<{ code: number; message: string }>(`/comments/${commentId}`);
   },
 
-  async deleteComment(commentId: number) {
-    const response = await axiosInstance.delete<CommentResponse>(`/comments/${commentId}`)
-    console.log('API 删除评论响应:', response.data)
-    return response
+  // 点赞/点踩评论
+  reactToComment(commentId: number, action: 'like' | 'dislike') {
+    return axiosInstance.post<CommentActionResponse>(`/comments/${commentId}/${action}`);
   }
-} 
+}; 
