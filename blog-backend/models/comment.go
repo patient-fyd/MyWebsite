@@ -3,13 +3,24 @@ package models
 import "time"
 
 type Comment struct {
-	ID        uint32    `gorm:"primaryKey;autoIncrement"`
-	PostID    uint32    `gorm:"not null"`
-	UserID    *uint32   `gorm:"default:null"` // 匿名评论时 userID 为空
-	Content   string    `gorm:"type:text;not null"`
-	ParentID  *uint32   `gorm:"default:null"` // 嵌套评论的父评论ID
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	User      User      `gorm:"foreignKey:UserID"`   // 引用用户表
-	Post      Post      `gorm:"foreignKey:PostID"`   // 引用文章表
-	Replies   []Comment `gorm:"foreignKey:ParentID"` // 嵌套评论
+	ID        uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
+	PostID    uint32    `gorm:"not null" json:"post_id"`
+	UserID    *uint32   `gorm:"default:null" json:"user_id"`
+	Content   string    `gorm:"type:text;not null" json:"content"`
+	ParentID  *uint32   `gorm:"default:null" json:"parent_id"`
+	Likes     uint32    `gorm:"default:0" json:"likes"`
+	Dislikes  uint32    `gorm:"default:0" json:"dislikes"`
+	User      User      `gorm:"foreignKey:UserID" json:"user"`
+	Post      Post      `gorm:"foreignKey:PostID" json:"-"`
+	Replies   []Comment `gorm:"foreignKey:ParentID" json:"replies"`
+	CreatedAt time.Time `gorm:"type:timestamp;autoCreateTime" json:"created_at"`
+}
+
+// CommentAction 用于记录用户对评论的操作
+type CommentAction struct {
+	ID        uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID    uint32    `gorm:"not null" json:"user_id"`
+	CommentID uint32    `gorm:"not null" json:"comment_id"`
+	Action    string    `gorm:"type:enum('like','dislike');not null" json:"action"`
+	CreatedAt time.Time `gorm:"type:timestamp;autoCreateTime" json:"created_at"`
 }

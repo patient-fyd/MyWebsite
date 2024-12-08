@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import axiosInstance from "@/utils/axiosInstance";
+import type { Post } from "@/services/types/article";
+import type { Category, Tag } from "@/services/types/base";
 
 export const useCategoryTagStore = defineStore("categoryTag", {
   state: () => ({
-    categories: [] as { id: number; name: string }[],
-    tags: [] as { id: number; name: string }[],
-    articles: [] as any[],
+    categories: [] as Category[],
+    tags: [] as Tag[],
+    articles: [] as Post[],
     totalArticles: 0,
     loading: false,
     error: null as string | null,
@@ -16,42 +18,29 @@ export const useCategoryTagStore = defineStore("categoryTag", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axiosInstance.get("/categories"); // 确保这个 URL 是正确的
+        const response = await axiosInstance.get<Category[]>("/categories");
         this.categories = response.data;
-      } catch (err) {
-        this.error = "获取分类列表失败";
+      } catch (err: any) {
+        this.error = err.message || "获取分类列表失败";
       } finally {
         this.loading = false;
       }
     },
 
-    async fetchArticlesByCategory(
-      categoryId: number | string,
-      page = 1,
-      pageSize = 6,
-    ) {
+    async fetchArticlesByCategory(categoryId: number | string, page = 1, pageSize = 6) {
+      this.loading = true;
+      this.error = null;
       try {
-        const response = await axiosInstance.get(
-          `/posts/category/${categoryId}`,
-          {
-            params: {
-              page,
-              page_size: pageSize,
-            },
-          },
-        );
+        const response = await axiosInstance.get(`/posts/category/${categoryId}`, {
+          params: { page, page_size: pageSize }
+        });
         this.articles = response.data.posts;
-        this.totalArticles = response.data.total; // 保存总文章数
-        this.error = null; // 重置错误信息
-      } catch (error: any) {
-        if (error.response && error.response.status === 404) {
-          // 如果是 404 错误，表示该类别下没有文章
-          this.articles = []; // 清空文章列表
-          this.error = "该类别下没有文章";
-        } else {
-          console.error("获取文章列表失败", error);
-          this.error = "获取文章列表失败";
-        }
+        this.totalArticles = response.data.total;
+      } catch (err: any) {
+        this.error = err.message || "获取文章列表失败";
+        this.articles = [];
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -59,13 +48,13 @@ export const useCategoryTagStore = defineStore("categoryTag", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axiosInstance.get("/tags"); // 确保这个 URL 是正确的
+        const response = await axiosInstance.get<Tag[]>("/tags");
         this.tags = response.data;
-      } catch (err) {
-        this.error = "获取标签列表失败";
+      } catch (err: any) {
+        this.error = err.message || "获取标签列表失败";
       } finally {
         this.loading = false;
       }
-    },
-  },
+    }
+  }
 });

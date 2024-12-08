@@ -1,30 +1,26 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import axiosInstance from "@/utils/axiosInstance";
 import { articleService } from "@/services/modules/articleService";
-import type { Article } from "@/services/types/article.d.ts";
+import type { Post } from "@/services/types/article";
 
 export const useArticleStore = defineStore(
   "articleStore",
   () => {
     // 状态定义
-    const popularPosts = ref<Article[]>([]);
-    const articles = ref<Article[]>([]);
-    const articleDetail = ref<Article | null>(null);
+    const articles = ref<Post[]>([]);
+    const popularPosts = ref<Post[]>([]);
+    const totalArticles = ref(0);
     const loading = ref(false);
     const error = ref<string | null>(null);
-    const searchResults = ref<Article[]>([]);
-    const searchLoading = ref(false);
-    const searchError = ref<string | null>(null);
-    const totalArticles = ref(0);
-    const totalSearchResults = ref(0);
 
-    // 使用 service 层处理业务逻辑
-    const fetchPopularPosts = async () => {
+    // 获取文章列表
+    const fetchArticles = async (params: { page?: number; page_size?: number } = {}) => {
       loading.value = true;
       error.value = null;
       try {
-        popularPosts.value = await articleService.getPopularPosts();
+        const response = await articleService.getArticles(params);
+        articles.value = response.posts;
+        totalArticles.value = response.total;
       } catch (err: any) {
         error.value = err.message;
       } finally {
@@ -32,184 +28,68 @@ export const useArticleStore = defineStore(
       }
     };
 
-    // 获取文章列表
-    const fetchArticles = async (
-      params: { page?: number; page_size?: number } = {},
-    ) => {
+    // 获取热门文章
+    const getPopularPosts = async () => {
       loading.value = true;
       error.value = null;
       try {
-        const response = await axiosInstance.get("/posts", { params });
-        articles.value = response.data.posts;
-        totalArticles.value = response.data.total;
+        const posts = await articleService.getPopularPosts();
+        popularPosts.value = posts;
+        return posts;
       } catch (err: any) {
-        error.value = "无法获取文章列表";
-        console.error("Error fetching articles:", err);
+        error.value = err.message;
+        return [];
       } finally {
         loading.value = false;
       }
     };
 
     // 获取文章详情
-    const fetchPostById = async (id: number) => {
+    const getArticleById = async (id: number): Promise<Post | null> => {
       loading.value = true;
       error.value = null;
-
       try {
-        const response = await axiosInstance.get(`/posts/${id}`);
-        articleDetail.value = response.data;
-
-        // 更新热门文章列表中的浏览量
-        const postIndex = popularPosts.value.findIndex(
-          (post: Article) => post.id === id,
-        );
-        if (postIndex !== -1 && articleDetail.value) {
-          popularPosts.value[postIndex].views = articleDetail.value.views;
-        }
-      } catch (err) {
-        error.value = "无法获取文章详情";
-        console.error(err);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    // 发布文章
-    const createArticle = async (data: {
-      title: string;
-      content: string;
-      summary: string;
-      category_id: number;
-      tags: string[];
-    }) => {
-      loading.value = true;
-      error.value = null;
-    
-      try {
-        const response = await axiosInstance.post("/posts", data);
-    
-        if (response.status === 200) {
-          articleDetail.value = response.data;
-          alert("文章发布成功");
-        }
+        const post = await articleService.getArticleById(id);
+        return post;
       } catch (err: any) {
-        error.value = err.response?.data?.error || "发布文章失败";
-        alert(error.value);
+        error.value = err.message;
+        return null;
       } finally {
         loading.value = false;
       }
     };
 
     // 删除文章
-    const deletePostById = async (id: number) => {
+    const deleteArticle = async (id: number): Promise<boolean> => {
       loading.value = true;
       error.value = null;
-
       try {
-        const response = await axiosInstance.delete(`/posts/${id}`);
-        if (response.status === 200) {
-          alert("文章删除成功");
-          // 从 articles 和 popularPosts 中移除已删除的文章
-          articles.value = articles.value.filter((post: Article) => post.id !== id);
-          popularPosts.value = popularPosts.value.filter(
-            (post: Article) => post.id !== id,
-          );
-        }
+        await articleService.deleteArticle(id);
+        articles.value = articles.value.filter(article => article.id !== id);
+        return true;
       } catch (err: any) {
-        error.value = err.response?.data?.error || "删除文章失败";
-        alert(error.value);
+        error.value = err.message;
+        return false;
       } finally {
         loading.value = false;
-      }
-    };
-
-    // 修改文章
-    const updatePostById = async (
-      id: number,
-      title: string,
-      content: string,
-      summary: string,
-      categoryID: number,
-      tags: string[],
-    ) => {
-      loading.value = true;
-      error.value = null;
-
-      try {
-        const response = await axiosInstance.put(`/posts/${id}`, {
-          title,
-          content,
-          summary,
-          category_id: categoryID,
-          tags,
-        });
-
-        if (response.status === 200) {
-          articleDetail.value = response.data;
-          alert("文章更新成功");
-          // 更新 articles 和 popularPosts 中的文章信息
-          const updateArticleInList = (list: Article[]) => {
-            const index = list.findIndex((post) => post.id === id);
-            if (index !== -1) {
-              list[index] = { ...list[index], ...response.data };
-            }
-          };
-          updateArticleInList(articles.value);
-          updateArticleInList(popularPosts.value);
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.error || "更新文章失败";
-        alert(error.value);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const searchArticles = async (keyword: string, page = 1, pageSize = 10) => {
-      searchLoading.value = true;
-      searchError.value = null;
-
-      try {
-        const response = await axiosInstance.get("/search", {
-          params: {
-            keyword,
-            page,
-            page_size: pageSize,
-          },
-        });
-        searchResults.value = response.data.posts;
-        totalSearchResults.value = response.data.total; // 保存总结果数
-      } catch (err: any) {
-        searchError.value = err.response?.data?.error || "搜索文章失败";
-        console.error("Error searching articles:", err);
-      } finally {
-        searchLoading.value = false;
       }
     };
 
     return {
       // 状态
-      popularPosts,
       articles,
-      articleDetail,
+      popularPosts,
+      totalArticles,
       loading,
       error,
-      searchResults,
-      searchLoading,
-      searchError,
-      totalArticles,
-      totalSearchResults,
       // 方法
-      fetchPopularPosts,
       fetchArticles,
-      fetchPostById,
-      createArticle,
-      deletePostById,
-      updatePostById,
-      searchArticles,
+      getPopularPosts,
+      getArticleById,
+      deleteArticle
     };
   },
   {
     persist: true
-  },
+  }
 );

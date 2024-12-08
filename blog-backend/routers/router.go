@@ -29,7 +29,9 @@ func SetupRoutes(r *gin.Engine) {
 		api.GET("/posts/:id", controllers.GetPost)
 		api.PUT("/posts/:id", middleware.AuthMiddleware(), controllers.UpdatePost)
 		api.DELETE("/posts/:id", middleware.AuthMiddleware(), controllers.DeletePost)
-		api.GET("/search", controllers.SearchPosts) // 搜索功能
+		api.POST("/posts/:id/comments", middleware.AuthMiddleware(), controllers.CreateComment) // 发表评论需要登录
+		api.GET("/posts/:id/comments", controllers.GetComments)                                 // 获取文章的评论列表
+		api.POST("/search", controllers.SearchPosts)                                            // 搜索功能
 
 		// 分类管理（需要用户认证的操作）
 		api.GET("/categories", controllers.GetCategories)                                      // 获取分类列表
@@ -45,9 +47,13 @@ func SetupRoutes(r *gin.Engine) {
 		api.DELETE("/tags/:id", middleware.AuthMiddleware(), controllers.DeleteTag) // 删除标签
 
 		// 评论管理
-		api.POST("/posts/:id/comments", controllers.CreateComment)                          // 添加评论
-		api.GET("/posts/:id/comments", controllers.GetComments)                             // 获取评论列表
-		api.DELETE("/comments/:id", middleware.AuthMiddleware(), controllers.DeleteComment) // 删除评论
+		commentRoutes := api.Group("/comments")
+		{
+			commentRoutes.GET("/:post_id", controllers.GetComments)                                     // 获取评论不需要登录
+			commentRoutes.DELETE("/:id", middleware.AuthMiddleware(), controllers.DeleteComment)        // 删除评论需要登录
+			commentRoutes.POST("/:id/like", middleware.AuthMiddleware(), controllers.LikeComment)       // 点赞评论
+			commentRoutes.POST("/:id/dislike", middleware.AuthMiddleware(), controllers.DislikeComment) // 点踩评论
+		}
 
 		// 统计功能
 		api.POST("/record-visit", controllers.RecordVisit)     // 记录站点访问

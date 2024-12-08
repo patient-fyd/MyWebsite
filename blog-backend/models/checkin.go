@@ -5,12 +5,12 @@ import (
 )
 
 type CheckIn struct {
-	ID        uint      `gorm:"primaryKey"`
-	UserID    uint      `gorm:"not null"` // 关联到用户
-	User      User      `gorm:"foreignKey:UserID"`
-	ProjectID uint      `gorm:"not null"` // 关联到大任务
-	Project   Project   `gorm:"foreignKey:ProjectID"`
-	Date      time.Time `gorm:"type:date;not null"`
-	TaskCount uint      `gorm:"default:0"`
-	CreatedAt time.Time
+	ID        uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID    uint32    `gorm:"not null" json:"user_id"`
+	ProjectID uint32    `gorm:"not null" json:"project_id"`
+	Date      time.Time `gorm:"type:date;not null" json:"date"`
+	TaskCount uint32    `gorm:"default:0" json:"task_count"`
+	User      User      `gorm:"foreignKey:UserID" json:"user"`
+	Project   Project   `gorm:"foreignKey:ProjectID" json:"project"`
+	CreatedAt time.Time `gorm:"type:timestamp;autoCreateTime" json:"created_at"`
 }

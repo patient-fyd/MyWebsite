@@ -5,15 +5,15 @@ import (
 )
 
 type Task struct {
-	ID          uint      `gorm:"primaryKey"`
-	ProjectID   uint      `gorm:"not null"` // 关联到大任务
-	Project     Project   `gorm:"foreignKey:ProjectID"`
-	Name        string    `gorm:"type:varchar(255);not null"`
-	Description string    `gorm:"type:text"`
-	Date        time.Time `gorm:"type:date;not null"`
-	Completed   bool      `gorm:"default:false"`
-	UserID      uint      `gorm:"not null"` // 关联到用户
-	User        User      `gorm:"foreignKey:UserID"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
+	ProjectID   uint32    `gorm:"not null" json:"project_id"`
+	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
+	Description string    `gorm:"type:text" json:"description"`
+	Date        time.Time `gorm:"type:date;not null" json:"date"`
+	Completed   bool      `gorm:"default:false" json:"completed"`
+	UserID      uint32    `gorm:"not null" json:"user_id"`
+	Project     Project   `gorm:"foreignKey:ProjectID" json:"project"`
+	User        User      `gorm:"foreignKey:UserID" json:"user"`
+	CreatedAt   time.Time `gorm:"type:timestamp;autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"type:timestamp;autoUpdateTime" json:"updated_at"`
 }
