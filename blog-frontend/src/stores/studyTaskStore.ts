@@ -1,115 +1,139 @@
 import { defineStore } from "pinia";
-import axiosInstance from "@/utils/axiosInstance";
+import { ref } from "vue";
+import { studyService } from "@/services/modules/studyService";
+import type { Project, Task } from "../services/types/study.d.ts";
 
-interface Project {
-  id: number;
-  name: string;
-  description?: string;
-}
+export const useStudyTaskStore = defineStore("studyTaskStore", () => {
+  // 状态
+  const projects = ref<Project[]>([]);
+  const tasks = ref<Task[]>([]);
+  const checkIns = ref<{ date: string; task_count: number }[]>([]);
+  const selectedProjectId = ref<number | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-interface Task {
-  id: number;
-  project_id: number;
-  name: string;
-  description?: string;
-  date: string;
-  completed: boolean;
-}
+  // Actions
+  const fetchProjects = async () => {
+    loading.value = true;
+    try {
+      projects.value = await studyService.getProjects();
+      if (projects.value.length > 0 && !selectedProjectId.value) {
+        selectedProjectId.value = projects.value[0].id;
+      }
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("获取项目失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
 
-interface CheckIn {
-  id: number;
-  user_id: number;
-  project_id: number;
-  date: string;
-  task_count: number;
-}
+  const createProject = async (projectData: Partial<Project>) => {
+    loading.value = true;
+    try {
+      const newProject = await studyService.createProject(projectData);
+      projects.value.push(newProject);
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("创建项目失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
 
-export const useStudyTaskStore = defineStore("studyTaskStore", {
-  state: () => ({
-    projects: [] as Project[],
-    tasks: [] as Task[],
-    checkIns: [] as { date: string; task_count: number }[],
-    selectedProjectId: null as number | null,
-  }),
-  actions: {
-    async fetchProjects() {
-      try {
-        const response = await axiosInstance.get("/projects");
-        this.projects = response.data;
-        if (this.projects.length > 0 && !this.selectedProjectId) {
-          this.selectedProjectId = this.projects[0].id;
-        }
-      } catch (error) {
-        console.error("获取大任务失败", error);
-      }
-    },
-    async createProject(projectData: Partial<Project>) {
-      try {
-        const response = await axiosInstance.post("/projects", projectData);
-        this.projects.push(response.data);
-      } catch (error) {
-        console.error("创建大任务失败", error);
-      }
-    },
-    async fetchTasks() {
-      if (!this.selectedProjectId) return;
-      try {
-        const response = await axiosInstance.get(
-          `/api/projects/${this.selectedProjectId}/tasks`,
-        );
-        this.tasks = response.data;
-      } catch (error) {
-        console.error("获取任务失败", error);
-      }
-    },
-    async createTask(taskData: Partial<Task>) {
-      if (!this.selectedProjectId) return;
-      try {
-        const response = await axiosInstance.post(
-          `/projects/${this.selectedProjectId}/tasks`,
-          taskData,
-        );
-        this.tasks.push(response.data);
-      } catch (error) {
-        console.error("创建任务失败", error);
-      }
-    },
-    async updateTask(task: Task) {
-      try {
-        await axiosInstance.put(`/tasks/${task.id}`, task);
-        this.fetchTasks();
-        this.fetchCheckIns();
-      } catch (error) {
-        console.error("更新任务失败", error);
-      }
-    },
-    async deleteTask(taskId: number) {
-      try {
-        await axiosInstance.delete(`/tasks/${taskId}`);
-        this.tasks = this.tasks.filter((task) => task.id !== taskId);
-      } catch (error) {
-        console.error("删除任务失败", error);
-      }
-    },
-    async fetchCheckIns() {
-      if (!this.selectedProjectId) return;
-      try {
-        const response = await axiosInstance.get("/checkins", {
-          params: { project_id: this.selectedProjectId },
-        });
-        const data = response.data as CheckIn[];
-        this.checkIns = data.map((checkin) => ({
-          date: checkin.date.slice(0, 10),
-          task_count: checkin.task_count,
-        }));
-      } catch (error) {
-        console.error("获取打卡数据失败", error);
-      }
-    },
-    selectProject(projectId: number) {
-      this.selectedProjectId = projectId;
-      this.fetchTasks();
-      this.fetchCheckIns();
-    },
-  },
+  const fetchTasks = async () => {
+    if (!selectedProjectId.value) return;
+    loading.value = true;
+    try {
+      tasks.value = await studyService.getTasks(selectedProjectId.value);
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("获取任务失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const createTask = async (taskData: Partial<Task>) => {
+    if (!selectedProjectId.value) return;
+    loading.value = true;
+    try {
+      const newTask = await studyService.createTask(selectedProjectId.value, taskData);
+      tasks.value.push(newTask);
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("创建任务失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const updateTask = async (task: Task) => {
+    loading.value = true;
+    try {
+      await studyService.updateTask(task);
+      await fetchTasks();
+      await fetchCheckIns();
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("更新任务失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteTask = async (taskId: number) => {
+    loading.value = true;
+    try {
+      await studyService.deleteTask(taskId);
+      tasks.value = tasks.value.filter(task => task.id !== taskId);
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("删除任务失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const fetchCheckIns = async () => {
+    if (!selectedProjectId.value) return;
+    loading.value = true;
+    try {
+      const data = await studyService.getCheckIns(selectedProjectId.value);
+      checkIns.value = data.map(checkin => ({
+        date: checkin.date.slice(0, 10),
+        task_count: checkin.task_count
+      }));
+    } catch (err: any) {
+      error.value = err.message;
+      console.error("获取打卡记录失败", err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const selectProject = (projectId: number) => {
+    selectedProjectId.value = projectId;
+    fetchTasks();
+    fetchCheckIns();
+  };
+
+  return {
+    // 状态
+    projects,
+    tasks,
+    checkIns,
+    selectedProjectId,
+    loading,
+    error,
+    // Actions
+    fetchProjects,
+    createProject,
+    fetchTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+    fetchCheckIns,
+    selectProject
+  };
 });

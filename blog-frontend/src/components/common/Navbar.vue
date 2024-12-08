@@ -3,7 +3,7 @@
     <!-- 网站Logo -->
     <div class="logo">
       <router-link to="/">
-        <img src="@/assets/logo-no-background.png" alt="网站Logo" />
+        <img src="../../assets/images/logo-no-background.png" alt="网站Logo" />
       </router-link>
     </div>
 
@@ -55,7 +55,7 @@
             <ul v-if="isDropdownVisible" class="dropdown-menu">
               <!-- 当用户已登录并且是管理员时，显示创建文章 -->
               <li v-if="isAuthenticated && isAdmin" class="dropdown-item">
-                <router-link to="/posts">创建文章</router-link>
+                <router-link :to="{ name: 'CreateArticle' }">创建文章</router-link>
               </li>
               <li v-if="isAuthenticated" class="dropdown-item">
                 <router-link to="/change-password">修改密码</router-link>
@@ -82,12 +82,25 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
-import { useUserStore } from "@/stores"; // 引入用户 store
+import { ref, computed, onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore"; // 直接从 userStore 导入
 import { useRouter } from "vue-router"; // 引入路由
 
 // 获取用户 store 和登录状态
 const userStore = useUserStore();
+
+// 添加初始化逻辑
+onMounted(async () => {
+  // 如果本地存储有 token，尝试获取用户信息
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      await userStore.fetchUserInfo();
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+    }
+  }
+});
 
 // 使用 computed 来确保 isAuthenticated 是响应式的
 const isAuthenticated = computed(() => userStore.isAuthenticated);
@@ -112,6 +125,12 @@ const logout = () => {
   // 直接重定向到主页，不需要等待 DOM 更新
   router.push("/");
 };
+
+console.log('Auth status:', {
+  isAuthenticated: isAuthenticated.value,
+  isAdmin: isAdmin.value,
+  token: localStorage.getItem('token')
+});
 </script>
 <style scoped>
 /* 常规的导航栏样式 */

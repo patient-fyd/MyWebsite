@@ -1,26 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axiosInstance from "@/utils/axiosInstance";
-
-// 定义接口类型
-interface Article {
-  id: number;
-  title: string;
-  content: string;
-  summary?: string;
-  views: number;
-  created_at: string;
-  updated_at: string;
-  category: {
-    id: number;
-    name: string;
-  };
-  author: {
-    Username: string;
-  };
-  tags?: string[]; // 可选的 tags 字段
-  comments?: { id: number; content: string; }[]; // 添加 comments 属性
-}
+import { articleService } from "@/services/modules/articleService";
+import type { Article } from "@/services/types/article.d.ts";
 
 export const useArticleStore = defineStore(
   "articleStore",
@@ -37,16 +19,14 @@ export const useArticleStore = defineStore(
     const totalArticles = ref(0);
     const totalSearchResults = ref(0);
 
-    // 获取热门文章
+    // 使用 service 层处理业务逻辑
     const fetchPopularPosts = async () => {
       loading.value = true;
       error.value = null;
       try {
-        const response = await axiosInstance.get("/popular-posts");
-        popularPosts.value = response.data;
-      } catch (err) {
-        error.value = "无法获取热门文章";
-        console.error("Error fetching popular posts:", err);
+        popularPosts.value = await articleService.getPopularPosts();
+      } catch (err: any) {
+        error.value = err.message;
       } finally {
         loading.value = false;
       }
@@ -81,7 +61,7 @@ export const useArticleStore = defineStore(
 
         // 更新热门文章列表中的浏览量
         const postIndex = popularPosts.value.findIndex(
-          (post) => post.id === id,
+          (post: Article) => post.id === id,
         );
         if (postIndex !== -1 && articleDetail.value) {
           popularPosts.value[postIndex].views = articleDetail.value.views;
@@ -95,32 +75,26 @@ export const useArticleStore = defineStore(
     };
 
     // 发布文章
-    const createArticle = async (
-      title: string,
-      content: string,
-      summary: string,
-      categoryID: number,
-      tags: string[],
-    ) => {
+    const createArticle = async (data: {
+      title: string;
+      content: string;
+      summary: string;
+      category_id: number;
+      tags: string[];
+    }) => {
       loading.value = true;
       error.value = null;
-
+    
       try {
-        const response = await axiosInstance.post("/posts", {
-          title,
-          content,
-          summary,
-          category_id: categoryID,
-          tags,
-        });
-
+        const response = await axiosInstance.post("/posts", data);
+    
         if (response.status === 200) {
           articleDetail.value = response.data;
           alert("文章发布成功");
         }
       } catch (err: any) {
         error.value = err.response?.data?.error || "发布文章失败";
-        alert(error.value); // 显示错误信息
+        alert(error.value);
       } finally {
         loading.value = false;
       }
@@ -136,9 +110,9 @@ export const useArticleStore = defineStore(
         if (response.status === 200) {
           alert("文章删除成功");
           // 从 articles 和 popularPosts 中移除已删除的文章
-          articles.value = articles.value.filter((post) => post.id !== id);
+          articles.value = articles.value.filter((post: Article) => post.id !== id);
           popularPosts.value = popularPosts.value.filter(
-            (post) => post.id !== id,
+            (post: Article) => post.id !== id,
           );
         }
       } catch (err: any) {

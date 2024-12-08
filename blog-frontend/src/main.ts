@@ -4,10 +4,11 @@ import router from "./router/index";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "@fortawesome/fontawesome-free/css/all.css";
-import "./assets/index.css";
+import "./assets/styles/index.css";
 // 导入 Quill 组件和样式
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import "md-editor-v3/lib/style.css";
 
 // 创建 Pinia 实例
 const pinia = createPinia();
