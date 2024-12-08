@@ -28,6 +28,7 @@ export const postRoutes: RouteRecordRaw[] = [
     component: () => import("@/views/article/Create.vue"),
     meta: {
       requiresAuth: true,
+      requiresAdmin: true,
       title: '创建文章'
     }
   }

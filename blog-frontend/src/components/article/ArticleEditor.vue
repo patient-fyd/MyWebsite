@@ -16,7 +16,7 @@
         <button @click="promptToggleEditor" class="toggle-button">
           <i class="fas fa-exchange-alt"></i>
         </button>
-        <router-link class="button-link" to="/public">返回主页</router-link>
+        <router-link class="button-link" to="/">返回主页</router-link>
       </div>
     </div>
 
@@ -68,6 +68,8 @@ import { useArticleEditor } from "@/composables/useArticleEditor"
 import SelectModal from "./SelectModal.vue"
 import Modal from "./Modal.vue"
 import type { Article } from "@/services/types/article"
+import "md-editor-v3/lib/style.css"
+import "@vueup/vue-quill/dist/vue-quill.snow.css"
 
 const props = defineProps<{
   actionText: string
@@ -137,5 +139,55 @@ const onEditorReady = () => {}
 </script>
 
 <style scoped>
-/* 保持原有样式不变 */
+.editor-container {
+  width: 100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 18px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.button-group button {
+  padding: 8px 16px;
+  background-color: #8dc9e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button-group button:hover {
+  background-color: #47abef;
+}
+
+.save-status {
+  margin-left: 10px;
+  color: #666;
+}
+
+/* 编辑器样式 */
+:deep(.ql-editor),
+:deep(.md-editor) {
+  min-height: 500px;
+}
 </style> 

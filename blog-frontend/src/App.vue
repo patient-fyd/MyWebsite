@@ -5,21 +5,21 @@
       <AppNavbar />
     </div>
 
-    <!-- 如果不是全屏页面，显示目标视图 -->
-    <div v-if="!isFullScreenPage" class="goal-view">
-      <GoalView />
-    </div>
-
     <!-- 主容器部分 -->
     <div
       :class="{
         'fullscreen-layout': isFullScreenPage,
-        container: !isFullScreenPage,
+        'container': !isFullScreenPage,
       }"
     >
+      <!-- 如果不是全屏页面，显示目标视图 -->
+      <div v-if="!isFullScreenPage" class="goal-view">
+        <GoalView />
+      </div>
+
       <div class="content">
         <!-- 如果是全屏页面，不显示 section 和 sidebar -->
-        <div :class="{ section: !isFullScreenPage }">
+        <div :class="{ 'section': !isFullScreenPage, 'full-width': isFullScreenPage }">
           <router-view />
         </div>
         <div v-if="!isFullScreenPage" class="sidebar">
@@ -53,19 +53,23 @@ const isFullScreenPage = ref(false);
 // 监听路径和查询参数变化
 watch(
   () => ({ name: route.name, path: route.path, editMode: route.query.edit }),
-  ({ name, path, editMode }) => {
-    isFullScreenPage.value =
-      name === "NotFound" ||
-      path === "/login" ||
-      path === "/register" ||
-      path === "/change-password" ||
-      path === "/posts" ||
-      path.startsWith("/readingNotes") || // 判断路径是否以 /readingNotes 开头
-      name === "StudyTask" ||
-      name === "ResetPassword" ||
-      editMode === "true"; // 当 editMode 为 true 时全屏
+  (newRoute) => {
+    console.log('Current route:', newRoute);
+    isFullScreenPage.value = [
+      'NotFound',
+      'CreateArticle',
+      'EditArticle',
+      'Login',
+      'Register',
+      'ChangePassword',
+      'ResetPassword',
+      'StudyTask'
+    ].includes(newRoute.name as string) || 
+    newRoute.path.startsWith('/readingNotes') ||
+    newRoute.path === '/posts' ||
+    newRoute.editMode === 'true';
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 
@@ -123,12 +127,21 @@ body {
   box-sizing: border-box;
 }
 
+.full-width {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 .fullscreen-layout {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* 全屏高度 */
-  width: 100vw; /* 全屏宽度 */
+  flex: 1;
+  width: 100%;
   background-color: #ffffff;
+  min-height: calc(100vh - 60px); /* 减去导航栏的高度 */
+}
+
+.fullscreen-layout .content {
+  padding: 0;
 }
 </style>

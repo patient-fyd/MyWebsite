@@ -55,7 +55,7 @@
             <ul v-if="isDropdownVisible" class="dropdown-menu">
               <!-- 当用户已登录并且是管理员时，显示创建文章 -->
               <li v-if="isAuthenticated && isAdmin" class="dropdown-item">
-                <router-link to="/posts">创建文章</router-link>
+                <router-link :to="{ name: 'CreateArticle' }">创建文章</router-link>
               </li>
               <li v-if="isAuthenticated" class="dropdown-item">
                 <router-link to="/change-password">修改密码</router-link>
@@ -66,7 +66,7 @@
                 >
               </li>
 
-              <!-- 当用户未登录时，显示登录和注��选项 -->
+              <!-- 当用户未登录时，显示登录和注册选项 -->
               <li v-if="!isAuthenticated" class="dropdown-item">
                 <router-link to="/login">登录</router-link>
               </li>
@@ -91,7 +91,7 @@ const userStore = useUserStore();
 
 // 添加初始化逻辑
 onMounted(async () => {
-  // 如果本地存储中有 token，尝试获取用户信息
+  // 如果本地存储有 token，尝试获取用户信息
   const token = localStorage.getItem('token');
   if (token) {
     try {
@@ -125,6 +125,12 @@ const logout = () => {
   // 直接重定向到主页，不需要等待 DOM 更新
   router.push("/");
 };
+
+console.log('Auth status:', {
+  isAuthenticated: isAuthenticated.value,
+  isAdmin: isAdmin.value,
+  token: localStorage.getItem('token')
+});
 </script>
 <style scoped>
 /* 常规的导航栏样式 */

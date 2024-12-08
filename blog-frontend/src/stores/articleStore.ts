@@ -75,32 +75,26 @@ export const useArticleStore = defineStore(
     };
 
     // 发布文章
-    const createArticle = async (
-      title: string,
-      content: string,
-      summary: string,
-      categoryID: number,
-      tags: string[],
-    ) => {
+    const createArticle = async (data: {
+      title: string;
+      content: string;
+      summary: string;
+      category_id: number;
+      tags: string[];
+    }) => {
       loading.value = true;
       error.value = null;
-
+    
       try {
-        const response = await axiosInstance.post("/posts", {
-          title,
-          content,
-          summary,
-          category_id: categoryID,
-          tags,
-        });
-
+        const response = await axiosInstance.post("/posts", data);
+    
         if (response.status === 200) {
           articleDetail.value = response.data;
           alert("文章发布成功");
         }
       } catch (err: any) {
         error.value = err.response?.data?.error || "发布文章失败";
-        alert(error.value); // 显示错误信息
+        alert(error.value);
       } finally {
         loading.value = false;
       }

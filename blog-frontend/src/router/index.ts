@@ -6,6 +6,7 @@ import { studyRoutes } from "./modules/study";
 import { readingNotesRoutes } from "./modules/readingNotes";
 import { categoryRoutes } from "./modules/category";
 import { RoutePath } from "./constants";
+import { useUserStore } from "@/stores/userStore";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -47,13 +48,27 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, _from, next) => {
-  document.title = `${to.meta.title} - 我的网站`;
+router.beforeEach(async (to, _from, next) => {
+  const userStore = useUserStore()
   
-  if (to.meta.requiresAuth) {
-    // 检查登录状态的逻辑
+  console.log('Route access:', {
+    path: to.path,
+    requiresAuth: to.meta.requiresAuth,
+    isAuthenticated: userStore.isAuthenticated,
+    isAdmin: userStore.isAdmin
+  });
+
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    next('/login')
+    return
   }
-  next();
-});
+  
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    next('/')
+    return
+  }
+  
+  next()
+})
 
 export default router;
