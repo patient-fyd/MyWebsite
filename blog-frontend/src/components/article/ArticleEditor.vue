@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { MdEditor } from "md-editor-v3"
 import { QuillEditor } from "@vueup/vue-quill"
 import { useArticleEditor } from "@/composables/useArticleEditor"
@@ -136,6 +136,18 @@ const handleModalCancel = () => {
 const onEditorBlur = () => {}
 const onEditorFocus = () => {}
 const onEditorReady = () => {}
+
+// 初始化编辑器内容
+onMounted(() => {
+  if (props.initialData) {
+    title.value = props.initialData.title
+    if (isUsingQuill.value) {
+      content.value = props.initialData.content
+    } else {
+      markdownContent.value = props.initialData.content
+    }
+  }
+})
 </script>
 
 <style scoped>

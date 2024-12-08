@@ -1,6 +1,7 @@
 import { ref, watch } from "vue"
 import debounce from "lodash-es/debounce"
 import { editorConfig } from "@/config/editor.config"
+import type { Article } from "@/services/types/article"
 
 const STORAGE_KEYS = {
   title: "articleTitle",
@@ -16,11 +17,11 @@ const SAVE_STATUS = {
   default: "文章将自动保存！"
 } as const
 
-export function useArticleEditor(initialContent = "### 在这里开始你的 Markdown 编辑") {
+export function useArticleEditor(initialContent = "### 在这里开始你的 Markdown 编辑", initialData?: Article) {
   // 状态定义
-  const title = ref("")
-  const markdownContent = ref(initialContent)
-  const content = ref("")
+  const title = ref(initialData?.title || "")
+  const markdownContent = ref(initialData?.content || initialContent)
+  const content = ref(initialData?.content || "")
   const isUsingQuill = ref(localStorage.getItem(STORAGE_KEYS.editorType) === "true")
   const savingStatus = ref<string>(SAVE_STATUS.default)
   const togglePrompt = ref(false)
@@ -90,7 +91,7 @@ export function useArticleEditor(initialContent = "### 在这里开始你的 Mar
   }
 
   return {
-    // 状态
+    // 状��
     title,
     markdownContent,
     content,
