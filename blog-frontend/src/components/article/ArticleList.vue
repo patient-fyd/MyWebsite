@@ -25,10 +25,9 @@
       <div class="article-footer">
         <p>
           标签:
-          <span v-for="(tag, tagIndex) in article.tags || []" :key="tagIndex"
-            >{{ tag
-            }}{{ tagIndex < (article.tags || []).length - 1 ? ", " : "" }}</span
-          >
+          <span v-for="(tag, tagIndex) in article.tags" :key="tagIndex">
+            {{ tag.name }}{{ tagIndex < article.tags.length - 1 ? ", " : "" }}
+          </span>
         </p>
         <button @click="readMore(article.id)">阅读更多</button>
       </div>
