@@ -1,89 +1,48 @@
 import { articleApi } from '../api/articleApi'
+import type { Post } from '../types/article'
 
 export const articleService = {
-  async getPopularPosts() {
-    try {
-      const { data } = await articleApi.getPopularPosts()
-      return data
-    } catch (error) {
-      console.error('获取热门文章失败:', error)
-      throw new Error('无法获取热门文章')
-    }
-  },
-
   async getArticles(params: { page?: number; page_size?: number } = {}) {
     try {
       const { data } = await articleApi.getArticles(params)
-      return data
-    } catch (error) {
-      console.error('获取文章列表失败:', error)
-      throw new Error('无法获取文章列表')
+      return {
+        posts: data.posts || [],
+        total: data.total || 0
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || '获取文章列表失败')
     }
   },
 
-  async getArticleById(id: number) {
+  async getArticleById(id: number): Promise<Post> {
     try {
       const { data } = await articleApi.getArticleById(id)
+      if (!data) {
+        throw new Error('文章不存在')
+      }
       return data
-    } catch (error) {
+    } catch (error: any) {
       console.error('获取文章详情失败:', error)
-      throw new Error('无法获取文章详情')
+      throw new Error(error.response?.data?.message || '无法获取文章详情')
     }
   },
 
-  async createArticle(articleData: {
-    title: string
-    content: string
-    summary: string
-    category_id: number
-    tags: string[]
-  }) {
+  async getPopularPosts(): Promise<Post[]> {
     try {
-      const { data } = await articleApi.createArticle(articleData)
-      return data
+      const { data } = await articleApi.getPopularPosts()
+      return data.posts || []
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || '发布文章失败'
-      throw new Error(errorMessage)
+      console.error('获取热门文章失败:', error)
+      throw new Error(error.response?.data?.message || '无法获取热门文章')
     }
   },
 
-  async updateArticle(id: number, articleData: {
-    title: string
-    content: string
-    summary: string
-    category_id: number
-    tags: string[]
-  }) {
-    try {
-      const { data } = await articleApi.updateArticle(id, articleData)
-      return data
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || '更新文章失败'
-      throw new Error(errorMessage)
-    }
-  },
-
-  async deleteArticle(id: number) {
+  async deleteArticle(id: number): Promise<boolean> {
     try {
       await articleApi.deleteArticle(id)
       return true
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || '删除文章失败'
-      throw new Error(errorMessage)
-    }
-  },
-
-  async searchArticles(keyword: string, page = 1, pageSize = 10) {
-    try {
-      const { data } = await articleApi.searchArticles({
-        keyword,
-        page,
-        page_size: pageSize
-      })
-      return data
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || '搜索文章失败'
-      throw new Error(errorMessage)
+      throw new Error(error.response?.data?.message || '删除文章失败')
     }
   }
 } 

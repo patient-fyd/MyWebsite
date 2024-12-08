@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { studyService } from "@/services/modules/studyService";
-import type { Project, Task } from "../services/types/study.d.ts";
+import type { Project, Task } from "../services/types/study";
 
 export const useStudyTaskStore = defineStore("studyTaskStore", () => {
   // 状态
@@ -28,14 +28,13 @@ export const useStudyTaskStore = defineStore("studyTaskStore", () => {
     }
   };
 
-  const createProject = async (projectData: Partial<Project>) => {
+  const createProject = async (projectData: { name: string; description: string }) => {
     loading.value = true;
     try {
       const newProject = await studyService.createProject(projectData);
       projects.value.push(newProject);
     } catch (err: any) {
       error.value = err.message;
-      console.error("创建项目失败", err);
     } finally {
       loading.value = false;
     }
@@ -45,16 +44,20 @@ export const useStudyTaskStore = defineStore("studyTaskStore", () => {
     if (!selectedProjectId.value) return;
     loading.value = true;
     try {
-      tasks.value = await studyService.getTasks(selectedProjectId.value);
+      const taskList = await studyService.getTasks(selectedProjectId.value);
+      tasks.value = taskList;
     } catch (err: any) {
       error.value = err.message;
-      console.error("获取任务失败", err);
     } finally {
       loading.value = false;
     }
   };
 
-  const createTask = async (taskData: Partial<Task>) => {
+  const createTask = async (taskData: {
+    name: string;
+    description: string;
+    date: string;
+  }) => {
     if (!selectedProjectId.value) return;
     loading.value = true;
     try {
@@ -62,21 +65,24 @@ export const useStudyTaskStore = defineStore("studyTaskStore", () => {
       tasks.value.push(newTask);
     } catch (err: any) {
       error.value = err.message;
-      console.error("创建任务失败", err);
     } finally {
       loading.value = false;
     }
   };
 
-  const updateTask = async (task: Task) => {
+  const updateTask = async (taskId: number, taskData: {
+    name?: string;
+    description?: string;
+    date?: string;
+    completed?: boolean;
+  }) => {
     loading.value = true;
     try {
-      await studyService.updateTask(task);
+      await studyService.updateTask(taskId, taskData);
       await fetchTasks();
       await fetchCheckIns();
     } catch (err: any) {
       error.value = err.message;
-      console.error("更新任务失败", err);
     } finally {
       loading.value = false;
     }
@@ -99,14 +105,15 @@ export const useStudyTaskStore = defineStore("studyTaskStore", () => {
     if (!selectedProjectId.value) return;
     loading.value = true;
     try {
-      const data = await studyService.getCheckIns(selectedProjectId.value);
-      checkIns.value = data.map(checkin => ({
+      const data = await studyService.getCheckIns({
+        project_id: selectedProjectId.value
+      });
+      checkIns.value = data.checkins.map(checkin => ({
         date: checkin.date.slice(0, 10),
         task_count: checkin.task_count
       }));
     } catch (err: any) {
       error.value = err.message;
-      console.error("获取打卡记录失败", err);
     } finally {
       loading.value = false;
     }

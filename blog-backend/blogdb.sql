@@ -87,6 +87,8 @@ CREATE TABLE `comments` (
   `content` text NOT NULL,
   `created_at` datetime(3) DEFAULT NULL,
   `parent_id` int unsigned DEFAULT NULL,
+  `likes` int unsigned DEFAULT 0,
+  `dislikes` int unsigned DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `fk_comments_replies` (`parent_id`),
   KEY `fk_posts_comments` (`post_id`),
@@ -352,6 +354,35 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'gfy','$2a$10$X6V1XRQjwCu/kGQ/5xQBKeIoo9wyS/aZUpyjgP.VSB/ycffVh1xfe','3327555932@qq.com','2024-10-17 10:54:22.000','2024-10-26 02:19:09.613','admin','',NULL,''),(2,'fyd','$2a$10$YpFiHWIlu73nmVq/Jcbb5uu6C3d7jl7A0WwugVz9eX9Cxpab99F5q','testuser@example.com','2024-10-23 14:53:18.413','2024-10-23 14:53:18.413','user','',NULL,''),(4,'test3','$2a$10$J6VGyhW5Bzwv1mexXSqiieUbzoYrZd2l.aoLCO8nqUStBKRamupMO','test3@example.com','2024-10-23 15:40:54.332','2024-10-23 15:40:54.332','user','',NULL,''),(5,'test4','$2a$10$llvG8351hN4dtuXI5RvWderpfRwa1GxR7NxdWD72YilFRTFPrpEhS','test@qq.com','2024-10-23 17:31:32.472','2024-10-23 20:13:15.453','user','',NULL,'');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `comment_actions`
+--
+
+DROP TABLE IF EXISTS `comment_actions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comment_actions` (
+  `id` int unsigned AUTO_INCREMENT PRIMARY KEY,
+  `user_id` int unsigned NOT NULL,
+  `comment_id` int unsigned NOT NULL,
+  `action` ENUM('like', 'dislike') NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_user_comment (user_id, comment_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comment_actions`
+--
+
+LOCK TABLES `comment_actions` WRITE;
+/*!40000 ALTER TABLE `comment_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comment_actions` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

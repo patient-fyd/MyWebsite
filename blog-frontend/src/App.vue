@@ -38,17 +38,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import AppNavbar from "./components/common/Navbar.vue";
 import AppFooter from "./components/common/Footer.vue";
 import GoalView from "@/components/common/GoalView.vue";
 import Common from "@/views/Common.vue";
 import ScrollToTop from "@/components/common/ScrollToTop.vue";
+import { useUserStore } from '@/stores/userStore'
 
 // 使用 Vue Router 获取当前路由
 const route = useRoute();
 const isFullScreenPage = ref(false);
+const userStore = useUserStore()
 
 // 监听路径和查询参数变化
 watch(
@@ -71,6 +73,12 @@ watch(
   },
   { immediate: true }
 );
+
+onMounted(async () => {
+  if (userStore.token) {
+    await userStore.getUserInfo()
+  }
+})
 </script>
 
 <style scoped>

@@ -1,20 +1,29 @@
 import axiosInstance from '@/utils/axiosInstance'
-import type { Article } from '../types/article'
+import type { ArticleListResponse, ArticleResponse } from '../types/article'
 
 export const articleApi = {
   // 获取热门文章
   getPopularPosts() {
-    return axiosInstance.get<Article[]>('/popular-posts')
+    console.log('Calling getPopularPosts API')
+    return axiosInstance.get<ArticleListResponse>('/popular-posts')
   },
 
   // 获取文章列表
   getArticles(params: { page?: number; page_size?: number }) {
-    return axiosInstance.get<{ posts: Article[]; total: number }>('/posts', { params })
+    console.log('Calling getArticles API with params:', params)
+    return axiosInstance.get<ArticleListResponse>('/posts', { 
+      params,
+      // 添加错误处理
+      validateStatus: (status) => {
+        return status >= 200 && status < 300
+      }
+    })
   },
 
   // 获取文章详情
   getArticleById(id: number) {
-    return axiosInstance.get<Article>(`/posts/${id}`)
+    console.log('Calling getArticleById API with id:', id)
+    return axiosInstance.get<ArticleResponse>(`/posts/${id}`)
   },
 
   // 创建文章
@@ -25,7 +34,7 @@ export const articleApi = {
     category_id: number
     tags: string[]
   }) {
-    return axiosInstance.post<Article>('/posts', data)
+    return axiosInstance.post<ArticleResponse>('/posts', data)
   },
 
   // 更新文章
@@ -36,16 +45,16 @@ export const articleApi = {
     category_id: number
     tags: string[]
   }) {
-    return axiosInstance.put<Article>(`/posts/${id}`, data)
+    return axiosInstance.put<ArticleResponse>(`/posts/${id}`, data)
   },
 
   // 删除文章
   deleteArticle(id: number) {
-    return axiosInstance.delete(`/posts/${id}`)
+    return axiosInstance.delete<ArticleResponse>(`/posts/${id}`)
   },
 
   // 搜索文章
   searchArticles(params: { keyword: string; page: number; page_size: number }) {
-    return axiosInstance.get<{ posts: Article[]; total: number }>('/search', { params })
+    return axiosInstance.get<ArticleListResponse>('/search', { params })
   }
 } 

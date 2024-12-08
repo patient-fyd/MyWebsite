@@ -11,47 +11,40 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <!-- 热门文章列表 -->
-    <ul v-if="!loading && !error && posts && posts.length" class="post-list">
+    <ul v-if="posts && posts.length > 0" class="post-list">
       <li v-for="post in posts" :key="post.id" class="post-item">
-        <a :href="`/posts/${post.id}`" class="post-link">
+        <router-link :to="`/posts/${post.id}`" class="post-link">
           {{ post.title }}
-        </a>
+        </router-link>
         <i class="fas fa-eye"></i>
         <span>{{ post.views }}</span>
       </li>
     </ul>
 
     <!-- 如果没有文章 -->
-    <div v-if="!loading && !error && posts.length === 0" class="no-posts">
+    <div v-if="!loading && (!posts || posts.length === 0)" class="no-posts">
       暂无热门文章
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useArticleStore } from "@/stores/articleStore";
+import type { Post } from "@/services/types/article";
 
 const articleStore = useArticleStore();
 
-const posts = computed(() => articleStore.popularPosts);
+const posts = ref<Post[]>([]);
 const loading = computed(() => articleStore.loading);
 const error = computed(() => articleStore.error);
-let intervalId: NodeJS.Timeout | undefined = undefined;
 
-onMounted(() => {
-  articleStore.fetchPopularPosts();
-
-  // 每隔 1 小时刷新一次热门文章列表
-  intervalId = setInterval(() => {
-    articleStore.fetchPopularPosts(); // 修正了 postStore 为 articleStore
-  }, 3600000);
-});
-
-// 清理定时器
-onUnmounted(() => {
-  if (intervalId) {
-    clearInterval(intervalId);
+onMounted(async () => {
+  try {
+    const popularPosts = await articleStore.getPopularPosts();
+    posts.value = popularPosts;
+  } catch (err) {
+    console.error('获取热门文章失败:', err);
   }
 });
 </script>

@@ -16,6 +16,7 @@
       <button @click="handleEdit">修改文章</button>
       <button @click="handleDelete">删除文章</button>
     </div>
+    <CommentList :postId="Number(route.params.id)" />
   </div>
   <p v-else-if="loading">加载中...</p>
   <p v-else-if="error">{{ error }}</p>
@@ -25,15 +26,16 @@
 import { onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { articleService } from "@/services/modules/articleService"
-import type { Article } from "@/services/types/article"
+import type { Post } from "@/services/types/article"
 import ArticleMeta from "@/components/article/ArticleMeta.vue"
 import { MdPreview } from "md-editor-v3"
 import "md-editor-v3/lib/style.css"
 import "highlight.js/styles/github.css"
+import CommentList from '@/components/comment/CommentList.vue'
 
 const route = useRoute()
 const router = useRouter()
-const post = ref<Article | null>(null)
+const post = ref<Post | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 

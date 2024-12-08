@@ -1,146 +1,67 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { userService } from "@/services/modules/userService";
-import type { User } from "@/services/types/user";
 
-export const useUserStore = defineStore("userStore", () => {
-  // 状态
-  const user = ref<User | null>(null);
-  const loading = ref(false);
+export const useUserStore = defineStore("user", () => {
+  const token = ref(localStorage.getItem("token") || "");
+  const user = ref<any>(null);
   const error = ref<string | null>(null);
-  const successMessage = ref<string | null>(null);
 
-  // 计算属性
+  const isAuthenticated = computed(() => !!token.value);
   const isAdmin = computed(() => user.value?.role === "admin");
-  const isAuthenticated = computed(() => !!user.value);
-
-  // 工具函数
-  const setError = (message: string) => {
-    error.value = message;
-    successMessage.value = null;
-  };
-
-  const setSuccess = (message: string) => {
-    successMessage.value = message;
-    error.value = null;
-  };
-
-  // Actions
-  const register = async (username: string, password: string, email: string) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const userData = await userService.register(username, password, email);
-      if (userData) {
-        user.value = userData;
-        setSuccess("注册成功");
-      }
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
 
   const login = async (username: string, password: string) => {
-    loading.value = true;
-    error.value = null;
-
     try {
       const response = await userService.login(username, password);
+      token.value = response.token;
+      localStorage.setItem("token", response.token);
       
-      // 登录成功后立即获取用户信息
-      await fetchUserInfo();
-      
-      setSuccess(response.message || "登录成功");
-      return response;
+      // 登录成功后获取用户信息
+      const userData = await getUserInfo();
+      if (userData) {
+        user.value = userData;
+        return true;
+      }
+      return false;
     } catch (err: any) {
-      setError(err.message);
-      throw err;
-    } finally {
-      loading.value = false;
+      error.value = err.message;
+      return false;
     }
   };
 
-  const fetchUserInfo = async () => {
+  const getUserInfo = async () => {
+    if (!token.value) return null;
     try {
       const userData = await userService.getUserInfo();
-      user.value = userData; // 确保这里正确设置了用户数据
+      user.value = userData;
       return userData;
     } catch (err: any) {
-      setError(err.message);
-      throw err;
+      error.value = err.message;
+      logout();
+      return null;
     }
   };
 
   const logout = () => {
+    token.value = "";
     user.value = null;
     localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token");
-    setSuccess("已退出登录");
   };
 
-  const changePassword = async (oldPassword: string, newPassword: string) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      await userService.changePassword(oldPassword, newPassword);
-      setSuccess("密码修改成功");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const requestPasswordReset = async (email: string) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const response = await userService.requestPasswordReset(email);
-      setSuccess(response.message || "重置密码请求已发送");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const resetPassword = async (verificationCode: string, newPassword: string) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const response = await userService.resetPassword(verificationCode, newPassword);
-      setSuccess(response.message || "密码重置成功");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      loading.value = false;
-    }
-  };
+  // 初始化时获取用户信息
+  if (token.value) {
+    getUserInfo();
+  }
 
   return {
-    // 状态
+    token,
     user,
-    loading,
     error,
-    successMessage,
-    // 计算属性
-    isAdmin,
     isAuthenticated,
-    // Actions
-    register,
+    isAdmin,
     login,
     logout,
-    fetchUserInfo,
-    changePassword,
-    requestPasswordReset,
-    resetPassword,
+    getUserInfo
   };
 }, {
   persist: true

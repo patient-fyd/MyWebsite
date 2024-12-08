@@ -55,32 +55,16 @@ const form = reactive({
 });
 
 const onSubmit = async () => {
-  if (!form.username || !form.password) {
-    errorMessage.value = "请填写所有必填项";
-    return;
-  }
-
   try {
-    isLoading.value = true;
-    errorMessage.value = "";
-    
-    const response = await userStore.login(form.username.trim(), form.password);
-    console.log('Login response:', response);
-    
-    if (userStore.isAuthenticated) {
-      router.push("/");
+    const success = await userStore.login(form.username, form.password);
+    if (success) {
+      router.push('/'); // 登录成功后跳转
     } else {
-      errorMessage.value = "登录失败，请重试";
+      // 显示错误信息
+      errorMessage.value = userStore.error || '登录失败';
     }
-  } catch (error: any) {
-    console.error("登录错误详情:", {
-      error,
-      response: error.response?.data,
-      message: error.message
-    });
-    errorMessage.value = error.message || "登录时发生错误，请稍后重试";
-  } finally {
-    isLoading.value = false;
+  } catch (err: any) {
+    errorMessage.value = err.message;
   }
 };
 </script>

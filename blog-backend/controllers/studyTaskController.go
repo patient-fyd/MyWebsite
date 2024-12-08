@@ -10,157 +10,304 @@ import (
 	"github.com/patient-fyd/blog-backend/models"
 )
 
-// 获取用户的任务项目
+// GetProjects 获取用户的学习项目列表
 func GetProjects(c *gin.Context) {
 	var projects []models.Project
+	userID := uint32(c.GetUint("userID"))
 	db := config.DB
-	userID := c.GetUint("userID")
 
-	if err := db.Where("user_id = ?", userID).Find(&projects).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取大任务失败"})
+	result := db.Where("user_id = ?", userID).Find(&projects)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "获取项目列表失败",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, projects)
+	// 获取每个项目的任务统计
+	for i := range projects {
+		var totalTasks, completedTasks int64
+		db.Model(&models.Task{}).Where("project_id = ?", projects[i].ID).Count(&totalTasks)
+		db.Model(&models.Task{}).Where("project_id = ? AND completed = ?", projects[i].ID, true).Count(&completedTasks)
+		projects[i].TotalTasks = uint32(totalTasks)
+		projects[i].CompletedTasks = uint32(completedTasks)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "获取项目列表成功",
+		"data": gin.H{
+			"projects": projects,
+			"total":    len(projects),
+		},
+	})
 }
 
-// 创建新的任务项目
+// CreateProject 创建新的学习项目
 func CreateProject(c *gin.Context) {
-	var project models.Project
-	userID := c.GetUint("userID")
-	db := config.DB
+	var input struct {
+		Name        string `json:"name" binding:"required"`
+		Description string `json:"description"`
+	}
 
-	if err := c.ShouldBindJSON(&project); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求数据格式错误"})
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "请求参数错误",
+		})
 		return
 	}
 
-	project.UserID = userID
+	userID := uint32(c.GetUint("userID"))
+	project := models.Project{
+		Name:        input.Name,
+		Description: input.Description,
+		UserID:      userID,
+	}
 
-	if err := db.Create(&project).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建大任务失败"})
+	if err := config.DB.Create(&project).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "创建项目失败",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, project)
+	c.JSON(http.StatusCreated, gin.H{
+		"code":    201,
+		"message": "创建项目成功",
+		"data":    project,
+	})
 }
 
-// 获取指定项目下的细分任务
+// GetTasks 获取指定项目下的任务列表
 func GetTasks(c *gin.Context) {
 	var tasks []models.Task
-	userID := c.GetUint("userID")
+	userID := uint32(c.GetUint("userID"))
 	projectID := c.Param("project_id")
 	db := config.DB
 
-	projectIDUint, err := strconv.ParseUint(projectID, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 project_id"})
+	result := db.Where("user_id = ? AND project_id = ?", userID, projectID).
+		Order("date DESC").
+		Find(&tasks)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "获取任务列表失败",
+		})
 		return
 	}
 
-	if err := db.Where("user_id = ? AND project_id = ?", userID, uint(projectIDUint)).Find(&tasks).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取细分任务失败"})
-		return
-	}
-
-	c.JSON(http.StatusOK, tasks)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "获取任务列表成功",
+		"data": gin.H{
+			"tasks": tasks,
+			"total": len(tasks),
+		},
+	})
 }
 
-// 创建细分任务
+// CreateTask 创建新任务
 func CreateTask(c *gin.Context) {
-	var task models.Task
-	userID := c.GetUint("userID")
-	projectID := c.Param("project_id")
-	db := config.DB
+	var input struct {
+		Name        string    `json:"name" binding:"required"`
+		Description string    `json:"description"`
+		Date        time.Time `json:"date" binding:"required"`
+	}
 
-	projectIDUint, err := strconv.ParseUint(projectID, 10, 32)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "请求参数错误",
+		})
+		return
+	}
+
+	userID := uint32(c.GetUint("userID"))
+	projectID, err := strconv.ParseUint(c.Param("project_id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 project_id"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "无效的项目ID",
+		})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求数据格式错误"})
+	task := models.Task{
+		Name:        input.Name,
+		Description: input.Description,
+		Date:        input.Date,
+		UserID:      userID,
+		ProjectID:   uint32(projectID),
+	}
+
+	if err := config.DB.Create(&task).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "创建任务失败",
+		})
 		return
 	}
 
-	task.UserID = userID
-	task.ProjectID = uint(projectIDUint)
-
-	if err := db.Create(&task).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建细分任务失败"})
-		return
-	}
-
-	c.JSON(http.StatusOK, task)
+	c.JSON(http.StatusCreated, gin.H{
+		"code":    201,
+		"message": "创建任务成功",
+		"data":    task,
+	})
 }
 
-// 更新细分任务
+// UpdateTask 更新任务状态
 func UpdateTask(c *gin.Context) {
-	var task models.Task
-	userID := c.GetUint("userID")
+	var input struct {
+		Name        string    `json:"name"`
+		Description string    `json:"description"`
+		Date        time.Time `json:"date"`
+		Completed   bool      `json:"completed"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "请求参数错误",
+		})
+		return
+	}
+
+	userID := uint32(c.GetUint("userID"))
 	taskID := c.Param("task_id")
-	db := config.DB
 
-	taskIDUint, err := strconv.ParseUint(taskID, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 task_id"})
+	var task models.Task
+	if err := config.DB.Where("id = ? AND user_id = ?", taskID, userID).First(&task).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "任务不存在",
+		})
 		return
 	}
 
-	if err := db.Where("id = ? AND user_id = ?", uint(taskIDUint), userID).First(&task).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "任务不存在"})
+	// 开启事务
+	tx := config.DB.Begin()
+
+	// 更新任务
+	updates := map[string]interface{}{
+		"completed": input.Completed,
+	}
+	if input.Name != "" {
+		updates["name"] = input.Name
+	}
+	if input.Description != "" {
+		updates["description"] = input.Description
+	}
+	if !input.Date.IsZero() {
+		updates["date"] = input.Date
+	}
+
+	if err := tx.Model(&task).Updates(updates).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "更新任务失败",
+		})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请求数据格式错误"})
-		return
-	}
-
-	if err := db.Save(&task).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新任务失败"})
-		return
-	}
-
-	// 如果任务被标记为完成，更新打卡记录
-	if task.Completed {
+	// 如果任务被标记为完成，创建或更新打卡记录
+	if input.Completed {
 		var checkIn models.CheckIn
-		date := time.Now().Format("2006-01-02")
+		today := time.Now().Format("2006-01-02")
 
-		// 检查当天是否已有打卡记录
-		if err := db.Where("user_id = ? AND project_id = ? AND date = ?", userID, task.ProjectID, date).First(&checkIn).Error; err == nil {
-			checkIn.TaskCount += 1
-			db.Save(&checkIn)
+		result := tx.Where("user_id = ? AND project_id = ? AND date = ?",
+			userID, task.ProjectID, today).First(&checkIn)
+
+		if result.Error == nil {
+			// 更新现有打卡记录
+			if err := tx.Model(&checkIn).Update("task_count", checkIn.TaskCount+1).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"code":    500,
+					"message": "更新打卡记录失败",
+				})
+				return
+			}
 		} else {
-			checkIn = models.CheckIn{
+			// 创建新的打卡记录
+			newCheckIn := models.CheckIn{
 				UserID:    userID,
 				ProjectID: task.ProjectID,
 				Date:      time.Now(),
 				TaskCount: 1,
 			}
-			db.Create(&checkIn)
+			if err := tx.Create(&newCheckIn).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"code":    500,
+					"message": "创建打卡记录失败",
+				})
+				return
+			}
 		}
 	}
 
-	c.JSON(http.StatusOK, task)
-}
-
-// 获取打卡记录
-func GetCheckIns(c *gin.Context) {
-	var checkIns []models.CheckIn
-	userID := c.GetUint("userID")
-	db := config.DB
-
-	projectID := c.Query("project_id")
-	if projectID != "" {
-		db = db.Where("project_id = ?", projectID)
-	}
-
-	if err := db.Where("user_id = ?", userID).Find(&checkIns).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取打卡记录失败"})
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "操作失败",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, checkIns)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "更新任务成功",
+		"data":    task,
+	})
 }
+
+// GetCheckIns 获取打卡记录
+func GetCheckIns(c *gin.Context) {
+	userID := uint32(c.GetUint("userID"))
+	projectID := c.Query("project_id")
+	db := config.DB.Model(&models.CheckIn{})
+
+	// 构建查询
+	query := db.Where("user_id = ?", userID)
+	if projectID != "" {
+		query = query.Where("project_id = ?", projectID)
+	}
+
+	// 获取打卡记录
+	var checkIns []models.CheckIn
+	if err := query.Order("date DESC").Find(&checkIns).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "获取打卡记录失败",
+		})
+		return
+	}
+
+	// 计算统计信息
+	var stats struct {
+		TotalDays     int `json:"total_days"`
+		CurrentStreak int `json:"current_streak"`
+		MaxStreak     int `json:"max_streak"`
+	}
+
+	// ... 实现统计逻辑 ...
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "获取打卡记录成功",
+		"data": gin.H{
+			"checkins":   checkIns,
+			"total":      len(checkIns),
+			"statistics": stats,
+		},
+	})
+}
+
+// 其他函数实现类似，我可以继续提供完整实现

@@ -1,36 +1,38 @@
-export interface Tag {
-  ID: number;
-  name: string;
-  created_at: string;
-}
+import type { BaseResponse } from './base'
 
-export interface Author {
-  id: number;
-  Username: string;
-  Email: string;
-  Role: string;
-  CreatedAt: string;
-  UpdatedAt: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  created_at: string;
-}
-
-export interface Article {
+export interface Post {
   id: number;
   title: string;
   content: string;
-  summary: string;
-  category_id: number;
-  category: Category;
-  author_id: number;
-  author: Author;
-  tags: Tag[];
-  comments: { id: number; content: string }[] | null;
-  views: number;
+  summary?: string;
+  author: {
+    id: number;
+    username: string;
+  };
   created_at: string;
   updated_at: string;
+  views: number;
+  comments?: Comment[];
+  tags: Tag[];
+}
+
+export interface ArticleListResponse {
+  posts: Post[]
+  total: number
+}
+
+export interface ArticleResponse {
+  id: number
+  title: string
+  content: string
+  summary?: string
+  author: {
+    id: number
+    username: string
+  }
+  created_at: string
+  updated_at: string
+  views: number
+  comments?: Comment[]
+  tags: Tag[]
 } 

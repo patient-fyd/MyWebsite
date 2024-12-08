@@ -27,9 +27,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // token 过期或无效时的处理
+      // 清除登录状态
       localStorage.removeItem('token');
-      localStorage.removeItem('refresh_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);

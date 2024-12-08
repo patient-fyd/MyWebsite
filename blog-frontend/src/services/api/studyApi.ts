@@ -1,34 +1,51 @@
 import axiosInstance from "@/utils/axiosInstance";
-import type { Project, Task, CheckIn, ApiResponse } from "../types/study.d.ts";
+import type {
+  ProjectListResponse,
+  ProjectResponse,
+  TaskListResponse,
+  TaskResponse,
+  CheckInListResponse
+} from "../types/study";
 
 export const studyApi = {
   getProjects() {
-    return axiosInstance.get<ApiResponse<Project[]>>("/projects");
+    return axiosInstance.get<ProjectListResponse>("/projects");
   },
 
-  createProject(data: Partial<Project>) {
-    return axiosInstance.post<ApiResponse<Project>>("/projects", data);
+  createProject(data: { name: string; description: string }) {
+    return axiosInstance.post<ProjectResponse>("/projects", data);
   },
 
   getTasks(projectId: number) {
-    return axiosInstance.get<ApiResponse<Task[]>>(`/projects/${projectId}/tasks`);
+    return axiosInstance.get<TaskListResponse>(`/projects/${projectId}/tasks`);
   },
 
-  createTask(projectId: number, data: Partial<Task>) {
-    return axiosInstance.post<ApiResponse<Task>>(`/projects/${projectId}/tasks`, data);
+  createTask(projectId: number, data: {
+    name: string;
+    description: string;
+    date: string;
+  }) {
+    return axiosInstance.post<TaskResponse>(`/projects/${projectId}/tasks`, data);
   },
 
-  updateTask(taskId: number, data: Task) {
-    return axiosInstance.put<ApiResponse<Task>>(`/tasks/${taskId}`, data);
+  updateTask(taskId: number, data: {
+    name?: string;
+    description?: string;
+    date?: string;
+    completed?: boolean;
+  }) {
+    return axiosInstance.put<TaskResponse>(`/tasks/${taskId}`, data);
+  },
+
+  getCheckIns(params: {
+    project_id?: number;
+    start_date?: string;
+    end_date?: string;
+  }) {
+    return axiosInstance.get<CheckInListResponse>("/checkins", { params });
   },
 
   deleteTask(taskId: number) {
-    return axiosInstance.delete<ApiResponse>(`/tasks/${taskId}`);
-  },
-
-  getCheckIns(projectId: number) {
-    return axiosInstance.get<ApiResponse<CheckIn[]>>("/checkins", {
-      params: { project_id: projectId }
-    });
+    return axiosInstance.delete<TaskResponse>(`/tasks/${taskId}`);
   }
 }; 

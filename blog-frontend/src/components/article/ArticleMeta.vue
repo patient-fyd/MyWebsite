@@ -8,7 +8,7 @@
     <span>
       <i class="fas fa-user"></i>
       <!-- 用户图标 -->
-      {{ author?.Username || "匿名" }}
+      {{ author?.username || "匿名" }}
     </span>
     <span>
       <i class="fas fa-comments"></i>
@@ -27,7 +27,8 @@
 import dayjs from "dayjs";
 
 interface Author {
-  Username: string;
+  id: number;
+  username: string;
 }
 
 const { author, createdAt, commentsCount, views } = defineProps({

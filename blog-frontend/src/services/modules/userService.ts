@@ -1,6 +1,13 @@
 import { userApi } from "../api/userApi";
-import type { User, LoginResponse } from "@/services/types/user.d.ts";
-import { TokenService } from "@/services/auth/tokenService";
+import type { User } from "@/services/types/user.d.ts";
+import axiosInstance from '@/utils/axiosInstance'
+
+interface LoginResponse {
+  code?: number;
+  message: string;
+  access_token: string;
+  refresh_token: string;
+}
 
 export const userService = {
   async register(username: string, password: string, email: string) {
@@ -18,59 +25,41 @@ export const userService = {
     }
   },
 
-  async login(username: string, password: string): Promise<LoginResponse> {
+  async login(username: string, password: string) {
     try {
-      const response = await userApi.login({ username, password });
-      console.log('API response:', response);
-      
-      const loginData = response.data;
-      if (!loginData.access_token || !loginData.refresh_token) {
-        console.error('Invalid login response:', loginData);
-        throw new Error("登录响应缺少必要的认证信息");
-      }
-
-      TokenService.setToken(loginData.access_token);
-      TokenService.setRefreshToken(loginData.refresh_token);
-      
-      return loginData;
-    } catch (error: any) {
-      console.error('Login error details:', {
-        error,
-        response: error.response?.data,
-        status: error.response?.status
+      const { data } = await axiosInstance.post<LoginResponse>('/auth/login', { 
+        username, 
+        password 
       });
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "登录失败";
-      throw new Error(errorMessage);
+      console.log('Login response:', data);
+      
+      if (data.access_token) {
+        return {
+          token: data.access_token,
+          user: null  // 用户信息需要通过单独的请求获取
+        };
+      }
+      
+      throw new Error(data.message || '登录失败');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      throw new Error(error.response?.data?.message || '登录失败');
     }
   },
 
   async getUserInfo(): Promise<User> {
     try {
-      const { data } = await userApi.getUserInfo();
+      const { data } = await axiosInstance.get('/user');
       console.log('GetUserInfo response:', data);
       
       if (!data.data) {
-        console.error('Invalid user data format:', data);
-        throw new Error("返回的用户数据格式不正确");
+        throw new Error('获取用户信息失败');
       }
-
-      const userData = data.data;
-      return {
-        id: userData.id,
-        username: userData.username,
-        email: userData.email,
-        role: userData.role,
-        created_at: userData.created_at,
-        updated_at: userData.updated_at
-      };
+      
+      return data.data;
     } catch (error: any) {
-      console.error('获取用户信息错误:', error.response || error);
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "获取用户信息失败";
-      throw new Error(errorMessage);
+      console.error('GetUserInfo error:', error);
+      throw new Error(error.response?.data?.message || '获取用户信息失败');
     }
   },
 

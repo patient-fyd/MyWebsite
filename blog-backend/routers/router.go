@@ -9,19 +9,20 @@ import (
 func SetupRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	{
-		// 用户注册和登录
-		api.POST("/register", controllers.Register)
-		api.POST("/login", controllers.Login)
-		api.POST("/refresh-token", controllers.RefreshToken) // 刷新令牌接口
-
-		// 密码相关功能
-		api.POST("/change-password", middleware.AuthMiddleware(), controllers.ChangePassword)
-		api.POST("/request-password-reset", controllers.RequestPasswordReset)
-		api.POST("/reset-password", controllers.ResetPassword)
+		// 认证相关路由组
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", controllers.Register)
+			auth.POST("/login", controllers.Login)
+			auth.POST("/refresh-token", controllers.RefreshToken)
+			auth.POST("/change-password", middleware.AuthMiddleware(), controllers.ChangePassword)
+			auth.POST("/request-password-reset", controllers.RequestPasswordReset)
+			auth.POST("/reset-password", controllers.ResetPassword)
+		}
 
 		// 用户信息管理
-		api.GET("/user", middleware.AuthMiddleware(), controllers.GetUser)    // 获取用户信息
-		api.PUT("/user", middleware.AuthMiddleware(), controllers.UpdateUser) // 更新用户信息
+		api.GET("/user", middleware.AuthMiddleware(), controllers.GetUser)
+		api.PUT("/user", middleware.AuthMiddleware(), controllers.UpdateUser)
 
 		// 文章管理（需要用户认证的操作）
 		api.POST("/posts", middleware.AuthMiddleware(), controllers.CreatePost)
@@ -29,7 +30,9 @@ func SetupRoutes(r *gin.Engine) {
 		api.GET("/posts/:id", controllers.GetPost)
 		api.PUT("/posts/:id", middleware.AuthMiddleware(), controllers.UpdatePost)
 		api.DELETE("/posts/:id", middleware.AuthMiddleware(), controllers.DeletePost)
-		api.GET("/search", controllers.SearchPosts) // 搜索功能
+		api.POST("/posts/:id/comments", middleware.AuthMiddleware(), controllers.CreateComment) // 发表评论需要登录
+		api.GET("/posts/:id/comments", controllers.GetComments)                                 // 获取文章的评论列表
+		api.POST("/search", controllers.SearchPosts)                                            // 搜索功能
 
 		// 分类管理（需要用户认证的操作）
 		api.GET("/categories", controllers.GetCategories)                                      // 获取分类列表
@@ -45,9 +48,13 @@ func SetupRoutes(r *gin.Engine) {
 		api.DELETE("/tags/:id", middleware.AuthMiddleware(), controllers.DeleteTag) // 删除标签
 
 		// 评论管理
-		api.POST("/posts/:id/comments", controllers.CreateComment)                          // 添加评论
-		api.GET("/posts/:id/comments", controllers.GetComments)                             // 获取评论列表
-		api.DELETE("/comments/:id", middleware.AuthMiddleware(), controllers.DeleteComment) // 删除评论
+		commentRoutes := api.Group("/comments")
+		{
+			commentRoutes.GET("/:post_id", controllers.GetComments)                                     // 获取评论不需要登录
+			commentRoutes.DELETE("/:id", middleware.AuthMiddleware(), controllers.DeleteComment)        // 删除评论需要登录
+			commentRoutes.POST("/:id/like", middleware.AuthMiddleware(), controllers.LikeComment)       // 点赞评论
+			commentRoutes.POST("/:id/dislike", middleware.AuthMiddleware(), controllers.DislikeComment) // 点踩评论
+		}
 
 		// 统计功能
 		api.POST("/record-visit", controllers.RecordVisit)     // 记录站点访问
