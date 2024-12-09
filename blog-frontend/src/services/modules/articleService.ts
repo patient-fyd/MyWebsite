@@ -5,9 +5,14 @@ export const articleService = {
   async getArticles(params: { page?: number; page_size?: number } = {}) {
     try {
       const { data } = await articleApi.getArticles(params)
+      const posts = data.data.posts.map(post => ({
+        ...post,
+        comments: [],
+        comment_count: post.comment_count || 0
+      }))
       return {
-        posts: data.posts || [],
-        total: data.total || 0
+        posts,
+        total: data.data.total || 0
       }
     } catch (error: any) {
       throw new Error(error.response?.data?.message || '获取文章列表失败')
@@ -17,10 +22,14 @@ export const articleService = {
   async getArticleById(id: number): Promise<Post> {
     try {
       const { data } = await articleApi.getArticleById(id)
-      if (!data) {
+      if (!data || !data.data) {
         throw new Error('文章不存在')
       }
-      return data
+      return {
+        ...data.data,
+        comments: data.data.comments || [],
+        comment_count: data.data.comment_count || 0
+      }
     } catch (error: any) {
       console.error('获取文章详情失败:', error)
       throw new Error(error.response?.data?.message || '无法获取文章详情')
@@ -30,7 +39,11 @@ export const articleService = {
   async getPopularPosts(): Promise<Post[]> {
     try {
       const { data } = await articleApi.getPopularPosts()
-      return data.posts || []
+      console.log('Popular posts response:', data)
+      if (Array.isArray(data)) {
+        return data
+      }
+      return data.data.posts || []
     } catch (error: any) {
       console.error('获取热门文章失败:', error)
       throw new Error(error.response?.data?.message || '无法获取热门文章')

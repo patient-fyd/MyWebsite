@@ -19,6 +19,9 @@ export const commentApi = {
 
   // 点赞/点踩评论
   reactToComment(commentId: number, action: 'like' | 'dislike') {
-    return axiosInstance.post<CommentActionResponse>(`/comments/${commentId}/${action}`);
+    return axiosInstance.post<CommentActionResponse>(
+      `/comments/${commentId}/${action}`,
+      {} // 空对象作为请求体
+    );
   }
 }; 

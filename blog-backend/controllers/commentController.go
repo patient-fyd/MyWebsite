@@ -212,11 +212,13 @@ func DeleteComment(c *gin.Context) {
 
 // LikeComment 点赞评论
 func LikeComment(c *gin.Context) {
+	c.Set("action", "like")
 	HandleCommentAction(c)
 }
 
 // DislikeComment 点踩评论
 func DislikeComment(c *gin.Context) {
+	c.Set("action", "dislike")
 	HandleCommentAction(c)
 }
 
@@ -253,17 +255,18 @@ func HandleCommentAction(c *gin.Context) {
 		return
 	}
 
-	// 获取操作类型
-	var input struct {
-		Action string `json:"action" binding:"required,oneof=like dislike"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
+	// 从上下文获取 action，而不是从请求体
+	action, exists := c.Get("action")
+	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "无效的操作类型",
 			"code":    400,
 		})
 		return
 	}
+
+	// 使用获取到的 action
+	actionStr := action.(string)
 
 	db := config.DB
 	var comment models.Comment
@@ -279,6 +282,13 @@ func HandleCommentAction(c *gin.Context) {
 
 	// 开启事务
 	tx := db.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "开启事务失败",
+			"code":    500,
+		})
+		return
+	}
 
 	// 检查用户是否已经对该评论进行过操作
 	var existingAction models.CommentAction
@@ -286,50 +296,93 @@ func HandleCommentAction(c *gin.Context) {
 
 	if err == nil {
 		// 如果已经有操作记录
-		if existingAction.Action == input.Action {
+		if existingAction.Action == actionStr {
 			// 如果是相同的操作，则取消操作
-			if input.Action == "like" {
-				tx.Model(&comment).Update("likes", gorm.Expr("likes - ?", 1))
+			var updateErr error
+			if actionStr == "like" {
+				updateErr = tx.Model(&comment).Update("likes", gorm.Expr("GREATEST(likes - ?, 0)", 1)).Error
 			} else {
-				tx.Model(&comment).Update("dislikes", gorm.Expr("dislikes - ?", 1))
+				updateErr = tx.Model(&comment).Update("dislikes", gorm.Expr("GREATEST(dislikes - ?, 0)", 1)).Error
 			}
-			tx.Delete(&existingAction)
+			if updateErr != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "更新计数失败",
+					"code":    500,
+				})
+				return
+			}
+
+			if err := tx.Delete(&existingAction).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "删除操作记录失败",
+					"code":    500,
+				})
+				return
+			}
 		} else {
 			// 如果是不同的操作，则更新操作类型
-			if input.Action == "like" {
-				tx.Model(&comment).Updates(map[string]interface{}{
+			var updateErr error
+			if actionStr == "like" {
+				updateErr = tx.Model(&comment).Updates(map[string]interface{}{
 					"likes":    gorm.Expr("likes + ?", 1),
-					"dislikes": gorm.Expr("dislikes - ?", 1),
-				})
+					"dislikes": gorm.Expr("GREATEST(dislikes - ?, 0)", 1),
+				}).Error
 			} else {
-				tx.Model(&comment).Updates(map[string]interface{}{
-					"likes":    gorm.Expr("likes - ?", 1),
+				updateErr = tx.Model(&comment).Updates(map[string]interface{}{
+					"likes":    gorm.Expr("GREATEST(likes - ?, 0)", 1),
 					"dislikes": gorm.Expr("dislikes + ?", 1),
-				})
+				}).Error
 			}
-			tx.Model(&existingAction).Update("action", input.Action)
+			if updateErr != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "更新计数失败",
+					"code":    500,
+				})
+				return
+			}
+
+			if err := tx.Model(&existingAction).Update("action", actionStr).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "更新操作类型失败",
+					"code":    500,
+				})
+				return
+			}
 		}
 	} else {
 		// 如果没有操作记录，则创建新的操作
 		newAction := models.CommentAction{
 			UserID:    uid,
 			CommentID: uint32(commentID),
-			Action:    input.Action,
+			Action:    actionStr,
 		}
 		if err := tx.Create(&newAction).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "操作失败",
+				"message": "创建操作记录失败",
 				"code":    500,
 			})
 			return
 		}
 
 		// 更新评论的点赞/点踩数
-		if input.Action == "like" {
-			tx.Model(&comment).Update("likes", gorm.Expr("likes + ?", 1))
+		var updateErr error
+		if actionStr == "like" {
+			updateErr = tx.Model(&comment).Update("likes", gorm.Expr("likes + ?", 1)).Error
 		} else {
-			tx.Model(&comment).Update("dislikes", gorm.Expr("dislikes + ?", 1))
+			updateErr = tx.Model(&comment).Update("dislikes", gorm.Expr("dislikes + ?", 1)).Error
+		}
+		if updateErr != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "更新计数失败",
+				"code":    500,
+			})
+			return
 		}
 	}
 
@@ -352,7 +405,7 @@ func HandleCommentAction(c *gin.Context) {
 		"data": gin.H{
 			"likes":    comment.Likes,
 			"dislikes": comment.Dislikes,
-			"action":   input.Action,
+			"action":   actionStr,
 		},
 	})
 }

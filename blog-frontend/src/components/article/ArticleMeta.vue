@@ -13,12 +13,12 @@
     <span>
       <i class="fas fa-comments"></i>
       <!-- 评论图标 -->
-      {{ commentsCount || 0 }} 条评论
+      {{ commentsCount ?? 0 }} 条评论
     </span>
     <span>
       <i class="fas fa-eye"></i>
       <!-- 观看图标 -->
-      {{ views || 0 }} 人阅读
+      {{ views ?? 0 }} 人阅读
     </span>
   </div>
 </template>
@@ -37,8 +37,14 @@ const { author, createdAt, commentsCount, views } = defineProps({
     required: true,
   },
   createdAt: String,
-  commentsCount: Number,
-  views: Number,
+  commentsCount: {
+    type: Number,
+    default: 0
+  },
+  views: {
+    type: Number,
+    default: 0
+  }
 });
 
 const formatDate = (date: string) => {

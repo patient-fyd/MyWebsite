@@ -35,6 +35,7 @@ func MigrateDB() error {
 		&models.User{},    // 自动迁移 User 模型
 		&models.Post{},    // 自动迁移 Post 模型
 		&models.Comment{}, // 自动迁移 Comment 模型
+		&models.CommentAction{},
 		&models.SiteStatistic{},
 		&models.Category{},
 		&models.Tag{},

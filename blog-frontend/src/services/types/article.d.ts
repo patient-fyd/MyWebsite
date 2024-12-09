@@ -13,26 +13,23 @@ export interface Post {
   updated_at: string;
   views: number;
   comments?: Comment[];
+  comment_count: number;
   tags: Tag[];
 }
 
 export interface ArticleListResponse {
-  posts: Post[]
-  total: number
+  code: number;
+  message: string;
+  data: {
+    posts: Post[];
+    total: number;
+    page: number;
+    page_size: number;
+  };
 }
 
 export interface ArticleResponse {
-  id: number
-  title: string
-  content: string
-  summary?: string
-  author: {
-    id: number
-    username: string
-  }
-  created_at: string
-  updated_at: string
-  views: number
-  comments?: Comment[]
-  tags: Tag[]
+  code: number;
+  message: string;
+  data: Post;
 } 

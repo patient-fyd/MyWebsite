@@ -38,6 +38,7 @@ export const useArticleStore = defineStore(
         return posts;
       } catch (err: any) {
         error.value = err.message;
+        console.error('获取热门文章失败:', err);
         return [];
       } finally {
         loading.value = false;

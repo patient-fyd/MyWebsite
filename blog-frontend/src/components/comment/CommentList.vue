@@ -30,16 +30,18 @@
         <div class="comment-reactions">
           <button 
             class="reaction-btn"
+            :class="{ active: comment.action === 'like' }"
             @click="handleReaction(comment.id, 'like')"
           >
-            <i class="fas fa-thumbs-up"></i>
+            <i class="fas fa-thumbs-up" :class="{ 'active-icon': comment.action === 'like' }"></i>
             <span>{{ comment.likes }}</span>
           </button>
           <button 
             class="reaction-btn"
+            :class="{ active: comment.action === 'dislike' }"
             @click="handleReaction(comment.id, 'dislike')"
           >
-            <i class="fas fa-thumbs-down"></i>
+            <i class="fas fa-thumbs-down" :class="{ 'active-icon': comment.action === 'dislike' }"></i>
             <span>{{ comment.dislikes }}</span>
           </button>
         </div>
@@ -214,17 +216,24 @@ const handleReaction = async (commentId: number, type: 'like' | 'dislike') => {
   }
 
   try {
-    const response = await commentApi.reactToComment(commentId, type)
-    console.log('点赞/点踩响应:', response.data)
+    const { data } = await commentApi.reactToComment(commentId, type);
+    console.log('点赞/点踩响应:', data);
     
-    // 如果后端返回成功，重新获取评论列表
-    if (response.data.code === 200) {
-      await fetchComments()
+    if (data.code === 200) {
+      // 更新当前评论的点赞/点踩数和状态
+      const comment = comments.value.find(c => c.id === commentId);
+      if (comment) {
+        comment.likes = data.data.likes;
+        comment.dislikes = data.data.dislikes;
+        comment.action = data.data.action;  // 更新用户的操作状态
+      }
     }
-  } catch (error) {
-    console.error('点赞/点踩失败:', error)
+  } catch (error: any) {
+    console.error('点赞/点踩失败:', error);
+    const message = error.response?.data?.message || '操作失败';
+    alert(message);
   }
-}
+};
 
 onMounted(() => {
   fetchComments()
@@ -352,20 +361,22 @@ button:disabled {
   transition: all 0.2s ease;
 }
 
-.reaction-btn:hover {
-  background-color: #f0f0f0;
-}
-
-.reaction-btn.active {
-  color: #8dc9e8;
-  border-color: #8dc9e8;
-}
-
 .reaction-btn i {
   font-size: 14px;
+  color: #ddd;
+  transition: color 0.2s ease;
+}
+
+.reaction-btn i.active-icon {
+  color: #8dc9e8;
+}
+
+.reaction-btn:hover i {
+  color: #8dc9e8;
 }
 
 .reaction-btn span {
   font-size: 12px;
+  color: #666;
 }
 </style> 

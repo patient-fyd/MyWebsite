@@ -106,39 +106,62 @@ func CreatePost(c *gin.Context) {
 	}
 }
 
-// GetPosts 获取文章列表，支持分页、分类、标签和搜索功能
+// GetPosts 获取文章列表
 func GetPosts(c *gin.Context) {
 	var posts []models.Post
-	db := config.DB // 使用全局数据库连接
+	db := config.DB
 
 	// 分页参数
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "6"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	offset := (page - 1) * pageSize
 
-	// 构建基本查询
-	baseQuery := db.Model(&models.Post{})
-
-	// 获取符合条件的总记录数
+	// 查询文章总数
 	var total int64
-	if err := baseQuery.Count(&total).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章总数失败：" + err.Error()})
+	db.Model(&models.Post{}).Count(&total)
+
+	// 查询文章列表，不包含 content
+	query := db.Model(&models.Post{}).
+		Select("id, title, summary, category_id, author_id, views, created_at, updated_at").
+		Preload("Category").
+		Preload("Author").
+		Preload("Tags")
+
+	// 添加评论计数
+	query = query.Joins("LEFT JOIN (SELECT post_id, COUNT(*) as comment_count FROM comments GROUP BY post_id) AS cc ON posts.id = cc.post_id")
+
+	// 执行查询
+	result := query.
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&posts)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "获取文章列表失败",
+		})
 		return
 	}
 
-	// 查询分页数据
-	if err := baseQuery.Preload("Author").Preload("Category").Preload("Tags").
-		Offset(offset).Limit(pageSize).
-		Order("created_at desc").
-		Find(&posts).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章列表失败：" + err.Error()})
-		return
+	// 获取每篇文章的评论数
+	for i := range posts {
+		var commentCount int64
+		db.Model(&models.Comment{}).Where("post_id = ?", posts[i].ID).Count(&commentCount)
+		posts[i].CommentCount = uint32(commentCount)
 	}
 
-	// 返回数据
 	c.JSON(http.StatusOK, gin.H{
-		"posts": posts,
-		"total": total,
+		"code":    200,
+		"message": "获取文章列表成功",
+		"data": gin.H{
+			"posts":      posts,
+			"total":      total,
+			"page":       page,
+			"page_size":  pageSize,
+			"total_page": (total + int64(pageSize) - 1) / int64(pageSize),
+		},
 	})
 }
 
@@ -192,27 +215,42 @@ func GetPostsByCategoryID(c *gin.Context) {
 	})
 }
 
-// GetPost 获取文章详情，包括文章内容、作者信息、评论等
+// GetPost 获取文章详情
 func GetPost(c *gin.Context) {
+	id := c.Param("id")
 	var post models.Post
 	db := config.DB
-	postID := c.Param("id")
 
-	// 预加载关联的 Author、Category、Tags 和 Comments
-	result := db.Preload("Author").Preload("Category").Preload("Tags").Preload("Comments").Where("id = ?", postID).First(&post)
+	// 查询文章详情，包含所有关联数据
+	result := db.
+		Select("*"). // 显式选择所有字段，包括 content
+		Preload("Category").
+		Preload("Author").
+		Preload("Tags").
+		Preload("Comments", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Preload("Comments.User").         // 预加载评论的用户信息
+		Preload("Comments.Replies").      // 预加载回复
+		Preload("Comments.Replies.User"). // 预加载回复的用户信息
+		First(&post, id)
+
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "文章未找到"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章详情失败：" + result.Error.Error()})
-		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": "文章不存在",
+		})
 		return
 	}
 
-	// 增加浏览次数
-	db.Model(&post).UpdateColumn("views", post.Views+1)
+	// 更新浏览量
+	db.Model(&post).Update("views", gorm.Expr("views + ?", 1))
 
-	c.JSON(http.StatusOK, post)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "获取文章成功",
+		"data":    post,
+	})
 }
 
 // UpdatePost 更新文章的标题、内容、分类和标签等信息
@@ -227,7 +265,7 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
-	// 定义一个输入结构体来接收更新数据
+	// 定义个输入结构体来接收更新数据
 	var input struct {
 		Title      string   `json:"title"`
 		Content    string   `json:"content"`
@@ -264,7 +302,7 @@ func UpdatePost(c *gin.Context) {
 
 	// 检查是否有有效的标签
 	if len(tags) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个有效的标签"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供一个��效的标签"})
 		return
 	}
 

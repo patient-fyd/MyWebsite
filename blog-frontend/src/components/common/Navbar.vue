@@ -95,7 +95,7 @@ onMounted(async () => {
   const token = localStorage.getItem('token');
   if (token) {
     try {
-      await userStore.fetchUserInfo();
+      await userStore.getUserInfo();
     } catch (error) {
       console.error('Failed to fetch user info:', error);
     }

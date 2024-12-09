@@ -10,7 +10,7 @@
         <ArticleMeta
           :author="article.author"
           :createdAt="article.created_at"
-          :commentsCount="article.comments?.length || 0"
+          :commentsCount="article.comment_count"
           :views="article.views"
         />
       </div>

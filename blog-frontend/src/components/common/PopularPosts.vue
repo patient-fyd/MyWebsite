@@ -4,27 +4,20 @@
       <h3>全站热门</h3>
     </div>
 
-    <!-- 加载状态 -->
     <div v-if="loading" class="loading">加载中...</div>
-
-    <!-- 错误状态 -->
-    <div v-if="error" class="error">{{ error }}</div>
-
-    <!-- 热门文章列表 -->
-    <ul v-if="posts && posts.length > 0" class="post-list">
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <ul v-else-if="posts.length > 0" class="post-list">
       <li v-for="post in posts" :key="post.id" class="post-item">
         <router-link :to="`/posts/${post.id}`" class="post-link">
           {{ post.title }}
         </router-link>
-        <i class="fas fa-eye"></i>
-        <span>{{ post.views }}</span>
+        <span class="views">
+          <i class="fas fa-eye"></i>
+          {{ post.views }}
+        </span>
       </li>
     </ul>
-
-    <!-- 如果没有文章 -->
-    <div v-if="!loading && (!posts || posts.length === 0)" class="no-posts">
-      暂无热门文章
-    </div>
+    <div v-else class="no-posts">暂无热门文章</div>
   </div>
 </template>
 
@@ -42,6 +35,7 @@ const error = computed(() => articleStore.error);
 onMounted(async () => {
   try {
     const popularPosts = await articleStore.getPopularPosts();
+    console.log('Fetched popular posts:', popularPosts);
     posts.value = popularPosts;
   } catch (err) {
     console.error('获取热门文章失败:', err);
